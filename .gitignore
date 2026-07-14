@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Local vector store and generated outputs
+chroma_db/*
+!chroma_db/.gitkeep
+outputs/charts/*
+!outputs/charts/.gitkeep
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store

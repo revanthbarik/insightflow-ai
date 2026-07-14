@@ -1,0 +1,91 @@
+Deal_ID,Lead_ID,Company_Name,Deal_Stage,Amount,Closing_Date,Forecast_Category,Product_Category,Region,Probability,Expected_Margin
+D001,L111,Ray Photon Solar,Closed Lost,1277000,2025-06-01,Omitted,Inverters,Dubai,0,0
+D002,L014,Bright Charge Systems,Closed Won,2220000,2025-04-23,Closed,Cables & Accessories,Africa Export,100,311000
+D003,L006,Apex Helios Power Solutions,PO Received,527000,2025-05-29,Commit,Batteries,Sharjah,91,47200
+D004,L142,Volt Helios EPC,PO Received,1611000,2025-01-07,Commit,Cables & Accessories,Ajman,92,325900
+D005,L104,Prime Volt Projects,New Inquiry,938000,2026-02-09,Pipeline,Batteries,Dubai,11,120300
+D006,L099,Prime Beam Solar,Closed Won,154000,2025-01-25,Closed,Inverters,Sharjah,100,15200
+D007,L038,Desert Charge Installations,Quotation Sent,1213000,2026-04-06,At Risk,Complete Solar Kit,Dubai,54,263600
+D008,L063,Green Charge Distribution,Negotiation,1026000,2025-01-24,At Risk,Mounting Structures,Saudi Arabia,74,87400
+D009,L134,SunPeak Photon Solar,Technical Discussion,159000,2025-05-14,Best Case,Solar Panels,Fujairah,29,24200
+D010,L015,Bright Current EPC,Closed Lost,331000,2026-02-10,Omitted,Batteries,Ajman,0,0
+D011,L114,Ray Ray Contracting,Quotation Sent,537000,2025-01-10,Best Case,Solar Panels,Fujairah,43,103100
+D012,L065,Green Charge Systems,Negotiation,1678000,2025-09-08,Commit,Solar Panels,Africa Export,65,250800
+D013,L001,Apex Beam Energy Trading,Negotiation,343000,2025-04-09,Best Case,Batteries,Ras Al Khaimah,73,31200
+D014,L115,Ray Ray Renewables,PO Received,459000,2024-12-06,Commit,Batteries,Dubai,83,41900
+D015,L025,Bright Ray Power Solutions,Closed Won,401000,2024-08-09,Closed,Mounting Structures,Ras Al Khaimah,100,70800
+D016,L149,Volt Volt Renewables,Quotation Sent,615000,2025-01-28,At Risk,Cables & Accessories,Abu Dhabi,53,72800
+D017,L078,Gulf Sun Distribution,Closed Lost,550000,2026-02-18,Omitted,Inverters,Africa Export,0,0
+D018,L112,Ray Power Power Solutions,PO Received,94000,2025-09-13,Commit,Batteries,Saudi Arabia,94,8000
+D019,L096,Nova Radiance Systems,New Inquiry,1480000,2025-04-12,Pipeline,Inverters,Ras Al Khaimah,19,125100
+D020,L058,Golden Lumen Solar,Technical Discussion,966000,2025-06-01,Pipeline,Batteries,Ajman,38,95900
+D021,L016,Bright Grid Solar,Quotation Sent,776000,2025-02-06,Pipeline,Cables & Accessories,Africa Export,40,142000
+D022,L048,Desert Sun Solar,Negotiation,421000,2025-01-30,Commit,Solar Panels,Ajman,74,46300
+D023,L100,Prime Lumen Renewables,PO Received,338000,2024-08-17,Commit,Mounting Structures,Sharjah,84,67400
+D024,L033,Clear Power Power Solutions,Negotiation,1677000,2026-01-02,At Risk,Solar Panels,Dubai,70,291000
+D025,L029,Clear Charge Energy Trading,Closed Won,340000,2025-08-26,Closed,Complete Solar Kit,Saudi Arabia,100,61100
+D026,L040,Desert Charge Solar,Closed Won,429000,2026-04-06,Closed,Cables & Accessories,Oman,100,41600
+D027,L080,Horizon Beam Distribution,Technical Discussion,242000,2025-11-10,Pipeline,Inverters,Dubai,31,38100
+D028,L137,SunPeak Solar Contracting,Quotation Sent,802000,2025-05-04,Pipeline,Inverters,Sharjah,49,108900
+D029,L022,Bright Photon Power Solutions,Closed Won,228000,2026-03-28,Closed,Batteries,Abu Dhabi,100,22200
+D030,L062,Golden Volt EPC,Quotation Sent,1022000,2025-05-24,Best Case,Mounting Structures,Sharjah,44,207400
+D031,L128,Solar Power Renewables,Closed Lost,370000,2025-10-18,Omitted,Cables & Accessories,Saudi Arabia,0,0
+D032,L127,Solar Current Installations,PO Received,602000,2025-11-23,Commit,Solar Panels,Sharjah,89,62000
+D033,L012,Bright Beam Power Solutions,Quotation Sent,855000,2024-11-22,Best Case,Complete Solar Kit,Ras Al Khaimah,42,98400
+D034,L043,Desert Photon Projects,Closed Won,381000,2026-04-05,Closed,Cables & Accessories,Ras Al Khaimah,100,57300
+D035,L101,Prime Power EPC,Technical Discussion,174000,2025-01-25,Best Case,Inverters,Dubai,38,14900
+D036,L144,Volt Lumen Energy Trading,Closed Lost,280000,2025-07-11,Omitted,Cables & Accessories,Ras Al Khaimah,0,0
+D037,L035,Clear Solar Systems,Closed Won,653000,2024-07-27,Closed,Complete Solar Kit,Ajman,100,133500
+D038,L052,Golden Current Power Solutions,PO Received,749000,2025-09-02,Commit,Mounting Structures,Saudi Arabia,89,107500
+D039,L008,Apex Power Systems,Closed Won,372000,2025-01-16,Closed,Mounting Structures,Saudi Arabia,100,40400
+D040,L074,Gulf Power Systems,PO Received,868000,2026-06-30,Commit,Batteries,Fujairah,92,85300
+D041,L118,Skyline Energy Projects,Quotation Sent,1148000,2024-10-26,Best Case,Batteries,Oman,43,134800
+D042,L051,Golden Current Installations,Technical Discussion,997000,2025-12-08,Best Case,Solar Panels,Dubai,27,214100
+D043,L045,Desert Power Projects,Technical Discussion,699000,2025-03-22,Pipeline,Complete Solar Kit,Saudi Arabia,25,104700
+D044,L023,Bright Power Projects,PO Received,2158000,2025-06-20,Commit,Mounting Structures,Africa Export,92,325300
+D045,L116,Ray Volt Power Solutions,Technical Discussion,371000,2025-10-28,Best Case,Solar Panels,Fujairah,35,60700
+D046,L044,Desert Photon Solar,Closed Lost,736000,2025-10-29,Omitted,Mounting Structures,Abu Dhabi,0,0
+D047,L010,Apex Radiance Systems,Closed Lost,258000,2025-11-22,Omitted,Cables & Accessories,Dubai,0,0
+D048,L059,Golden Solar Power Solutions,Closed Lost,602000,2024-06-19,Omitted,Complete Solar Kit,Sharjah,0,0
+D049,L095,Nova Energy Solar,Quotation Sent,211000,2026-09-15,Best Case,Mounting Structures,Africa Export,57,25100
+D050,L150,Volt Volt Systems,PO Received,720000,2024-07-12,Commit,Complete Solar Kit,Abu Dhabi,91,137700
+D051,L034,Clear Power Projects,Quotation Sent,159000,2024-10-16,Pipeline,Complete Solar Kit,Ajman,59,24100
+D052,L026,Bright Volt EPC,PO Received,236000,2025-07-19,Commit,Solar Panels,Ajman,95,36000
+D053,L140,Volt Beam Solar,Technical Discussion,884000,2025-01-28,Best Case,Inverters,Fujairah,25,119400
+D054,L131,SunPeak Lumen Power Solutions,PO Received,1163000,2025-11-29,Commit,Cables & Accessories,Abu Dhabi,89,170400
+D055,L032,Clear Power Contracting,New Inquiry,402000,2025-07-11,Pipeline,Solar Panels,Saudi Arabia,20,33700
+D056,L090,Horizon Volt Contracting,Negotiation,135000,2025-02-28,At Risk,Batteries,Abu Dhabi,67,24400
+D057,L067,Green Grid Power Solutions,PO Received,379000,2026-08-02,Commit,Complete Solar Kit,Ras Al Khaimah,84,73900
+D058,L020,Bright Lumen Installations,Technical Discussion,1636000,2025-07-20,Pipeline,Solar Panels,Oman,34,202700
+D059,L031,Clear Energy EPC,Technical Discussion,378000,2025-05-17,Best Case,Batteries,Abu Dhabi,21,67600
+D060,L005,Apex Grid Contracting,PO Received,1906000,2026-07-01,Commit,Batteries,Fujairah,92,236200
+D061,L024,Bright Ray Contracting,Technical Discussion,692000,2025-09-12,Best Case,Batteries,Ras Al Khaimah,40,133200
+D062,L050,Golden Charge Systems,Quotation Sent,63000,2025-04-30,Best Case,Mounting Structures,Ras Al Khaimah,57,7700
+D063,L011,Apex Solar Renewables,Quotation Sent,1120000,2026-04-13,Best Case,Cables & Accessories,Fujairah,55,144300
+D064,L120,Skyline Grid Renewables,Closed Lost,505000,2025-03-13,Omitted,Solar Panels,Ajman,0,0
+D065,L009,Apex Radiance Renewables,Negotiation,373000,2026-02-14,Best Case,Inverters,Ras Al Khaimah,69,79700
+D066,L102,Prime Ray Systems,New Inquiry,2082000,2024-11-03,Pipeline,Batteries,Dubai,13,225500
+D067,L133,SunPeak Photon Distribution,PO Received,222000,2026-04-18,Commit,Mounting Structures,Africa Export,83,36900
+D068,L122,Skyline Lumen Systems,PO Received,101000,2024-07-18,Commit,Cables & Accessories,Abu Dhabi,87,8800
+D069,L075,Gulf Ray Systems,Negotiation,88000,2024-11-17,Best Case,Mounting Structures,Africa Export,60,18900
+D070,L070,Gulf Beam Energy Trading,Technical Discussion,2063000,2025-03-28,Pipeline,Mounting Structures,Saudi Arabia,29,257800
+D071,L106,Prime Watt Installations,Closed Won,497000,2026-03-06,Closed,Complete Solar Kit,Oman,100,77000
+D072,L064,Green Charge Solar,Closed Won,481000,2024-06-13,Closed,Solar Panels,Ras Al Khaimah,100,97900
+D073,L107,Ray Current Energy Trading,Technical Discussion,1089000,2025-05-11,Best Case,Batteries,Africa Export,25,229900
+D074,L089,Horizon Sun Distribution,Closed Lost,220000,2025-08-22,Omitted,Solar Panels,Africa Export,0,0
+D075,L147,Volt Radiance EPC,Quotation Sent,431000,2024-12-22,Best Case,Cables & Accessories,Oman,44,85800
+D076,L121,Skyline Helios Power Solutions,Negotiation,809000,2025-11-05,Best Case,Complete Solar Kit,Oman,74,138100
+D077,L054,Golden Helios Distribution,Closed Won,522000,2025-02-13,Closed,Mounting Structures,Africa Export,100,54600
+D078,L084,Horizon Grid Energy Trading,Closed Lost,1172000,2025-09-25,Omitted,Cables & Accessories,Saudi Arabia,0,0
+D079,L066,Green Grid Installations,New Inquiry,684000,2026-02-10,Pipeline,Solar Panels,Africa Export,15,144300
+D080,L148,Volt Ray Solar,New Inquiry,90000,2025-11-10,Pipeline,Mounting Structures,Sharjah,14,14500
+D081,L083,Horizon Energy Power Solutions,PO Received,562000,2025-07-29,Commit,Mounting Structures,Ras Al Khaimah,81,97500
+D082,L110,Ray Photon Installations,Negotiation,630000,2025-05-25,At Risk,Complete Solar Kit,Sharjah,69,111300
+D083,L041,Desert Current Renewables,Closed Won,1520000,2024-12-03,Closed,Mounting Structures,Saudi Arabia,100,325300
+D084,L143,Volt Lumen Contracting,Negotiation,1795000,2026-01-10,Commit,Cables & Accessories,Saudi Arabia,73,320000
+D085,L086,Horizon Photon Distribution,Negotiation,630000,2025-04-05,Best Case,Cables & Accessories,Saudi Arabia,62,96700
+D086,L091,Nova Beam Projects,PO Received,728000,2024-11-11,Commit,Complete Solar Kit,Oman,81,142700
+D087,L130,Solar Solar EPC,PO Received,733000,2025-07-03,Commit,Batteries,Fujairah,94,70600
+D088,L049,Desert Watt Energy Trading,Technical Discussion,1733000,2025-11-21,Best Case,Complete Solar Kit,Abu Dhabi,21,248700
+D089,L036,Clear Sun Installations,PO Received,370000,2024-08-02,Commit,Mounting Structures,Sharjah,89,67100
+D090,L135,SunPeak Photon Systems,Negotiation,154000,2026-03-05,At Risk,Complete Solar Kit,Abu Dhabi,62,13300

@@ -1,0 +1,151 @@
+Lead_ID,Company_Name,Lead_Source,Industry,Estimated_Value,Status,Created_Date,Sales_Rep,Region,Customer_Type,Product_Interest
+L001,Apex Beam Energy Trading,Partner Channel,Residential Installer,350000,Contacted,2024-12-17,Omar Ali,Ras Al Khaimah,Installer,Batteries
+L002,Apex Beam Systems,Website Inquiry,Government / Semi-Government,685000,Lost,2025-03-09,Revanth Barik,Ras Al Khaimah,Government Client,Batteries
+L003,Apex Charge Solar,Sales Referral,Residential Installer,425000,Quotation Sent,2025-07-18,Sarah Mathew,Ras Al Khaimah,Installer,Solar Panels
+L004,Apex Charge Systems,Website Inquiry,Commercial & Industrial,925000,Converted,2025-07-19,Omar Ali,Sharjah,Commercial Client,Solar Panels
+L005,Apex Grid Contracting,Website Inquiry,Utility Project,2000000,Contacted,2025-11-29,Omar Ali,Fujairah,Government Client,Batteries
+L006,Apex Helios Power Solutions,Trade Exhibition,Real Estate Developer,540000,Contacted,2025-02-26,Aisha Khan,Sharjah,Commercial Client,Batteries
+L007,Apex Power Contracting,Partner Channel,Real Estate Developer,535000,Lost,2024-04-20,Sarah Mathew,Ajman,Commercial Client,Inverters
+L008,Apex Power Systems,Cold Outreach,Trading Partner,400000,Contacted,2024-08-16,Aisha Khan,Saudi Arabia,Distributor,Mounting Structures
+L009,Apex Radiance Renewables,WhatsApp Inquiry,Facility Management,355000,Qualified,2025-10-18,Zayed Hussain,Ras Al Khaimah,Commercial Client,Cables & Accessories
+L010,Apex Radiance Systems,WhatsApp Inquiry,Facility Management,335000,Contacted,2025-08-17,Revanth Barik,Dubai,Commercial Client,Cables & Accessories
+L011,Apex Solar Renewables,Cold Outreach,Real Estate Developer,1115000,Converted,2025-06-07,Aisha Khan,Fujairah,Commercial Client,Cables & Accessories
+L012,Bright Beam Power Solutions,Website Inquiry,Trading Partner,825000,Quotation Sent,2024-01-02,Zayed Hussain,Ras Al Khaimah,Government Client,Complete Solar Kit
+L013,Bright Beam Systems,Repeat Customer,Trading Partner,155000,Lost,2024-12-04,Zayed Hussain,Fujairah,Distributor,Solar Panels
+L014,Bright Charge Systems,Partner Channel,Utility Project,2215000,Qualified,2025-02-16,Revanth Barik,Africa Export,Export Customer,Cables & Accessories
+L015,Bright Current EPC,Repeat Customer,Residential Installer,385000,Quotation Sent,2025-11-24,Omar Ali,Ajman,Installer,Batteries
+L016,Bright Grid Solar,Website Inquiry,Real Estate Developer,835000,Qualified,2024-08-03,Sarah Mathew,Africa Export,Export Customer,Cables & Accessories
+L017,Bright Helios Systems,Zoho Campaign,Facility Management,525000,Lost,2024-08-06,Zayed Hussain,Saudi Arabia,Commercial Client,Complete Solar Kit
+L018,Bright Lumen Distribution,Partner Channel,Residential Installer,305000,Lost,2025-10-10,Zayed Hussain,Abu Dhabi,Installer,Inverters
+L019,Bright Lumen Energy Trading,Trade Exhibition,Utility Project,1120000,New Inquiry,2024-02-17,Omar Ali,Ajman,Government Client,Solar Panels
+L020,Bright Lumen Installations,Trade Exhibition,Government / Semi-Government,1910000,Quotation Sent,2025-02-13,Omar Ali,Oman,Government Client,Complete Solar Kit
+L021,Bright Photon Contracting,Repeat Customer,Solar EPC Contractor,580000,Contacted,2025-12-13,Zayed Hussain,Abu Dhabi,EPC,Cables & Accessories
+L022,Bright Photon Power Solutions,Zoho Campaign,Trading Partner,220000,Quotation Sent,2025-11-14,Zayed Hussain,Abu Dhabi,Government Client,Batteries
+L023,Bright Power Projects,Repeat Customer,Government / Semi-Government,2170000,Contacted,2025-05-01,Sarah Mathew,Africa Export,Export Customer,Batteries
+L024,Bright Ray Contracting,Zoho Campaign,Trading Partner,735000,Contacted,2024-10-08,Sarah Mathew,Ras Al Khaimah,Distributor,Batteries
+L025,Bright Ray Power Solutions,Cold Outreach,Trading Partner,415000,Converted,2024-03-23,Omar Ali,Ras Al Khaimah,Distributor,Mounting Structures
+L026,Bright Volt EPC,WhatsApp Inquiry,Residential Installer,255000,Quotation Sent,2024-12-04,Zayed Hussain,Ajman,Installer,Solar Panels
+L027,Bright Volt Installations,Repeat Customer,Trading Partner,885000,Converted,2025-12-13,Aisha Khan,Oman,Government Client,Mounting Structures
+L028,Bright Volt Solar,Cold Outreach,Government / Semi-Government,1550000,Quotation Sent,2025-03-05,Zayed Hussain,Dubai,Government Client,Cables & Accessories
+L029,Clear Charge Energy Trading,Trade Exhibition,Trading Partner,365000,Quotation Sent,2025-05-12,Aisha Khan,Saudi Arabia,Distributor,Complete Solar Kit
+L030,Clear Charge Solar,Zoho Campaign,Real Estate Developer,470000,Converted,2025-06-30,Aisha Khan,Sharjah,Government Client,Cables & Accessories
+L031,Clear Energy EPC,Repeat Customer,Solar EPC Contractor,405000,Quotation Sent,2024-07-05,Aisha Khan,Abu Dhabi,EPC,Batteries
+L032,Clear Power Contracting,Cold Outreach,Trading Partner,435000,Quotation Sent,2024-10-11,Sarah Mathew,Saudi Arabia,Distributor,Solar Panels
+L033,Clear Power Power Solutions,Website Inquiry,Government / Semi-Government,1770000,Contacted,2025-10-27,Aisha Khan,Dubai,Export Customer,Solar Panels
+L034,Clear Power Projects,Trade Exhibition,Solar EPC Contractor,165000,Converted,2024-06-05,Omar Ali,Ajman,EPC,Complete Solar Kit
+L035,Clear Solar Systems,Zoho Campaign,Commercial & Industrial,685000,Qualified,2024-06-20,Zayed Hussain,Ajman,Commercial Client,Complete Solar Kit
+L036,Clear Sun Installations,Partner Channel,Commercial & Industrial,375000,Converted,2024-01-27,Revanth Barik,Sharjah,Commercial Client,Mounting Structures
+L037,Clear Watt EPC,WhatsApp Inquiry,Real Estate Developer,1440000,Lost,2025-10-04,Omar Ali,Ajman,Commercial Client,Batteries
+L038,Desert Charge Installations,Cold Outreach,Commercial & Industrial,1265000,Quotation Sent,2025-11-08,Revanth Barik,Dubai,Commercial Client,Complete Solar Kit
+L039,Desert Charge Projects,Repeat Customer,Facility Management,575000,New Inquiry,2025-03-19,Revanth Barik,Dubai,Commercial Client,Mounting Structures
+L040,Desert Charge Solar,Sales Referral,Residential Installer,420000,Converted,2025-10-28,Revanth Barik,Oman,Installer,Cables & Accessories
+L041,Desert Current Renewables,Repeat Customer,Government / Semi-Government,1425000,Qualified,2024-09-08,Aisha Khan,Saudi Arabia,Government Client,Mounting Structures
+L042,Desert Helios Distribution,Repeat Customer,Trading Partner,435000,New Inquiry,2025-05-21,Revanth Barik,Saudi Arabia,Distributor,Inverters
+L043,Desert Photon Projects,Cold Outreach,Facility Management,355000,Converted,2025-12-19,Revanth Barik,Ras Al Khaimah,Commercial Client,Cables & Accessories
+L044,Desert Photon Solar,Trade Exhibition,Trading Partner,835000,Quotation Sent,2025-05-15,Zayed Hussain,Abu Dhabi,Export Customer,Mounting Structures
+L045,Desert Power Projects,Website Inquiry,Government / Semi-Government,690000,Qualified,2024-08-14,Sarah Mathew,Saudi Arabia,Government Client,Batteries
+L046,Desert Radiance EPC,Cold Outreach,Facility Management,505000,Lost,2025-07-17,Revanth Barik,Saudi Arabia,Commercial Client,Mounting Structures
+L047,Desert Ray Systems,Partner Channel,Utility Project,1465000,New Inquiry,2024-07-16,Revanth Barik,Ras Al Khaimah,Government Client,Cables & Accessories
+L048,Desert Sun Solar,Trade Exhibition,Residential Installer,420000,Quotation Sent,2024-10-10,Zayed Hussain,Ajman,Government Client,Cables & Accessories
+L049,Desert Watt Energy Trading,Trade Exhibition,Utility Project,1745000,Contacted,2025-01-04,Omar Ali,Abu Dhabi,Government Client,Complete Solar Kit
+L050,Golden Charge Systems,Website Inquiry,Residential Installer,65000,Converted,2024-10-26,Omar Ali,Ras Al Khaimah,Installer,Mounting Structures
+L051,Golden Current Installations,Partner Channel,Commercial & Industrial,1135000,Quotation Sent,2025-03-27,Revanth Barik,Dubai,Commercial Client,Solar Panels
+L052,Golden Current Power Solutions,WhatsApp Inquiry,Utility Project,775000,Quotation Sent,2025-05-18,Aisha Khan,Saudi Arabia,Government Client,Complete Solar Kit
+L053,Golden Grid Projects,Sales Referral,Solar EPC Contractor,755000,New Inquiry,2024-09-11,Aisha Khan,Sharjah,EPC,Mounting Structures
+L054,Golden Helios Distribution,Repeat Customer,Trading Partner,550000,Quotation Sent,2024-10-31,Zayed Hussain,Africa Export,Export Customer,Mounting Structures
+L055,Golden Helios Installations,WhatsApp Inquiry,Utility Project,1370000,Lost,2024-08-04,Revanth Barik,Dubai,Government Client,Inverters
+L056,Golden Helios Systems,WhatsApp Inquiry,Trading Partner,245000,New Inquiry,2025-02-22,Sarah Mathew,Sharjah,Distributor,Mounting Structures
+L057,Golden Lumen Installations,Trade Exhibition,Utility Project,1710000,Lost,2024-10-16,Sarah Mathew,Dubai,Government Client,Inverters
+L058,Golden Lumen Solar,Repeat Customer,Utility Project,980000,Converted,2024-08-18,Omar Ali,Ajman,Distributor,Solar Panels
+L059,Golden Solar Power Solutions,Partner Channel,Solar EPC Contractor,725000,Quotation Sent,2024-05-07,Sarah Mathew,Sharjah,EPC,Complete Solar Kit
+L060,Golden Solar Systems,Zoho Campaign,Real Estate Developer,1120000,New Inquiry,2025-09-04,Aisha Khan,Ras Al Khaimah,Export Customer,Batteries
+L061,Golden Sun Installations,WhatsApp Inquiry,Utility Project,1460000,Lost,2025-08-12,Zayed Hussain,Dubai,Export Customer,Batteries
+L062,Golden Volt EPC,Zoho Campaign,Solar EPC Contractor,1045000,Qualified,2024-07-04,Zayed Hussain,Sharjah,EPC,Mounting Structures
+L063,Green Charge Distribution,Cold Outreach,Commercial & Industrial,1005000,Qualified,2024-11-24,Aisha Khan,Saudi Arabia,Installer,Mounting Structures
+L064,Green Charge Solar,Repeat Customer,Government / Semi-Government,455000,Quotation Sent,2024-03-31,Revanth Barik,Ras Al Khaimah,Government Client,Solar Panels
+L065,Green Charge Systems,Website Inquiry,Real Estate Developer,1580000,Converted,2025-04-18,Sarah Mathew,Africa Export,Export Customer,Solar Panels
+L066,Green Grid Installations,Cold Outreach,Trading Partner,735000,Quotation Sent,2025-10-02,Sarah Mathew,Africa Export,Export Customer,Solar Panels
+L067,Green Grid Power Solutions,Sales Referral,Trading Partner,380000,Quotation Sent,2025-12-16,Sarah Mathew,Ras Al Khaimah,Distributor,Complete Solar Kit
+L068,Green Sun Systems,Partner Channel,Trading Partner,660000,New Inquiry,2025-07-19,Sarah Mathew,Sharjah,Distributor,Solar Panels
+L069,Green Volt Power Solutions,Sales Referral,Government / Semi-Government,2390000,Lost,2024-10-25,Zayed Hussain,Abu Dhabi,Government Client,Mounting Structures
+L070,Gulf Beam Energy Trading,Trade Exhibition,Government / Semi-Government,2215000,Converted,2024-05-28,Sarah Mathew,Saudi Arabia,Government Client,Cables & Accessories
+L071,Gulf Energy Installations,Partner Channel,Residential Installer,440000,Quotation Sent,2024-12-14,Zayed Hussain,Abu Dhabi,Installer,Solar Panels
+L072,Gulf Lumen Energy Trading,Zoho Campaign,Utility Project,1125000,Quotation Sent,2025-07-05,Sarah Mathew,Ras Al Khaimah,Government Client,Cables & Accessories
+L073,Gulf Power Renewables,Cold Outreach,Real Estate Developer,595000,Lost,2024-09-01,Zayed Hussain,Saudi Arabia,Commercial Client,Mounting Structures
+L074,Gulf Power Systems,Zoho Campaign,Solar EPC Contractor,920000,Quotation Sent,2025-11-10,Omar Ali,Fujairah,EPC,Solar Panels
+L075,Gulf Ray Systems,Cold Outreach,Residential Installer,90000,Quotation Sent,2024-04-12,Zayed Hussain,Africa Export,Export Customer,Mounting Structures
+L076,Gulf Solar EPC,Repeat Customer,Solar EPC Contractor,445000,New Inquiry,2025-04-25,Revanth Barik,Sharjah,EPC,Complete Solar Kit
+L077,Gulf Solar Projects,Cold Outreach,Real Estate Developer,1985000,Lost,2025-06-30,Sarah Mathew,Abu Dhabi,Export Customer,Complete Solar Kit
+L078,Gulf Sun Distribution,Website Inquiry,Government / Semi-Government,585000,Contacted,2025-10-08,Revanth Barik,Africa Export,Export Customer,Inverters
+L079,Gulf Watt Distribution,WhatsApp Inquiry,Commercial & Industrial,1480000,Lost,2024-04-12,Sarah Mathew,Oman,Commercial Client,Batteries
+L080,Horizon Beam Distribution,Cold Outreach,Solar EPC Contractor,240000,Qualified,2025-01-02,Revanth Barik,Dubai,EPC,Inverters
+L081,Horizon Charge Contracting,Sales Referral,Real Estate Developer,565000,New Inquiry,2025-09-16,Sarah Mathew,Sharjah,Commercial Client,Inverters
+L082,Horizon Charge Distribution,Trade Exhibition,Government / Semi-Government,2235000,Lost,2024-09-17,Sarah Mathew,Sharjah,Government Client,Solar Panels
+L083,Horizon Energy Power Solutions,Sales Referral,Government / Semi-Government,610000,Quotation Sent,2024-12-19,Zayed Hussain,Ras Al Khaimah,Government Client,Mounting Structures
+L084,Horizon Grid Energy Trading,Partner Channel,Utility Project,1335000,Quotation Sent,2025-05-09,Aisha Khan,Saudi Arabia,Government Client,Cables & Accessories
+L085,Horizon Lumen Contracting,Partner Channel,Facility Management,85000,Lost,2025-02-09,Revanth Barik,Ras Al Khaimah,Commercial Client,Complete Solar Kit
+L086,Horizon Photon Distribution,Partner Channel,Solar EPC Contractor,605000,Converted,2024-12-26,Omar Ali,Saudi Arabia,EPC,Cables & Accessories
+L087,Horizon Power Distribution,WhatsApp Inquiry,Utility Project,665000,Qualified,2025-03-27,Aisha Khan,Sharjah,Government Client,Complete Solar Kit
+L088,Horizon Ray Projects,Partner Channel,Residential Installer,205000,Lost,2025-03-01,Omar Ali,Abu Dhabi,Installer,Cables & Accessories
+L089,Horizon Sun Distribution,Partner Channel,Facility Management,235000,Qualified,2025-05-08,Revanth Barik,Africa Export,Export Customer,Complete Solar Kit
+L090,Horizon Volt Contracting,Zoho Campaign,Facility Management,140000,Contacted,2024-08-19,Sarah Mathew,Abu Dhabi,Government Client,Batteries
+L091,Nova Beam Projects,Website Inquiry,Commercial & Industrial,705000,Converted,2024-05-06,Sarah Mathew,Oman,Commercial Client,Complete Solar Kit
+L092,Nova Beam Solar,Cold Outreach,Utility Project,955000,Lost,2024-08-27,Sarah Mathew,Oman,Government Client,Cables & Accessories
+L093,Nova Charge Systems,WhatsApp Inquiry,Facility Management,545000,Lost,2024-11-05,Sarah Mathew,Ajman,Commercial Client,Solar Panels
+L094,Nova Current Systems,Zoho Campaign,Solar EPC Contractor,365000,New Inquiry,2024-08-28,Zayed Hussain,Ras Al Khaimah,EPC,Mounting Structures
+L095,Nova Energy Solar,Repeat Customer,Facility Management,220000,Quotation Sent,2025-11-01,Aisha Khan,Africa Export,Export Customer,Mounting Structures
+L096,Nova Radiance Systems,Website Inquiry,Real Estate Developer,1650000,Qualified,2024-08-10,Sarah Mathew,Ras Al Khaimah,Commercial Client,Inverters
+L097,Nova Volt Power Solutions,Cold Outreach,Facility Management,630000,Lost,2025-01-02,Aisha Khan,Abu Dhabi,Commercial Client,Inverters
+L098,Prime Beam Renewables,WhatsApp Inquiry,Commercial & Industrial,595000,Lost,2025-10-16,Zayed Hussain,Saudi Arabia,EPC,Batteries
+L099,Prime Beam Solar,Trade Exhibition,Trading Partner,150000,Converted,2024-07-31,Zayed Hussain,Sharjah,Distributor,Inverters
+L100,Prime Lumen Renewables,Website Inquiry,Facility Management,350000,Contacted,2024-05-13,Zayed Hussain,Sharjah,Commercial Client,Inverters
+L101,Prime Power EPC,Sales Referral,Commercial & Industrial,180000,Qualified,2024-08-31,Zayed Hussain,Dubai,Commercial Client,Inverters
+L102,Prime Ray Systems,Sales Referral,Utility Project,2265000,Converted,2024-04-26,Aisha Khan,Dubai,Government Client,Batteries
+L103,Prime Solar Power Solutions,Trade Exhibition,Commercial & Industrial,1440000,New Inquiry,2025-11-05,Zayed Hussain,Saudi Arabia,Commercial Client,Complete Solar Kit
+L104,Prime Volt Projects,Zoho Campaign,Solar EPC Contractor,960000,Quotation Sent,2025-12-03,Aisha Khan,Dubai,EPC,Mounting Structures
+L105,Prime Volt Solar,Cold Outreach,Commercial & Industrial,1425000,Contacted,2024-03-08,Omar Ali,Abu Dhabi,Commercial Client,Complete Solar Kit
+L106,Prime Watt Installations,Partner Channel,Facility Management,535000,Converted,2025-09-11,Sarah Mathew,Oman,Commercial Client,Complete Solar Kit
+L107,Ray Current Energy Trading,Trade Exhibition,Commercial & Industrial,1050000,Quotation Sent,2024-08-21,Sarah Mathew,Africa Export,Export Customer,Batteries
+L108,Ray Current Installations,Repeat Customer,Government / Semi-Government,700000,Qualified,2025-03-13,Revanth Barik,Oman,Government Client,Batteries
+L109,Ray Grid Energy Trading,WhatsApp Inquiry,Residential Installer,85000,New Inquiry,2024-04-05,Sarah Mathew,Saudi Arabia,Installer,Complete Solar Kit
+L110,Ray Photon Installations,Website Inquiry,Facility Management,650000,Converted,2024-12-03,Aisha Khan,Sharjah,Commercial Client,Complete Solar Kit
+L111,Ray Photon Solar,Partner Channel,Real Estate Developer,1460000,Qualified,2024-12-26,Aisha Khan,Dubai,Commercial Client,Inverters
+L112,Ray Power Power Solutions,Trade Exhibition,Residential Installer,90000,Qualified,2025-07-23,Revanth Barik,Saudi Arabia,Installer,Batteries
+L113,Ray Radiance Power Solutions,Website Inquiry,Trading Partner,720000,Lost,2025-12-11,Revanth Barik,Oman,Distributor,Batteries
+L114,Ray Ray Contracting,Cold Outreach,Utility Project,525000,Contacted,2024-05-26,Zayed Hussain,Fujairah,Government Client,Solar Panels
+L115,Ray Ray Renewables,WhatsApp Inquiry,Residential Installer,425000,Converted,2024-08-08,Sarah Mathew,Dubai,Installer,Batteries
+L116,Ray Volt Power Solutions,Partner Channel,Residential Installer,415000,Qualified,2025-08-04,Zayed Hussain,Fujairah,Installer,Solar Panels
+L117,Skyline Current Solar,Website Inquiry,Residential Installer,390000,New Inquiry,2024-10-05,Sarah Mathew,Sharjah,Installer,Mounting Structures
+L118,Skyline Energy Projects,Partner Channel,Government / Semi-Government,1205000,Converted,2024-04-26,Revanth Barik,Oman,Government Client,Batteries
+L119,Skyline Energy Solar,Partner Channel,Government / Semi-Government,490000,Contacted,2025-02-08,Zayed Hussain,Africa Export,Export Customer,Solar Panels
+L120,Skyline Grid Renewables,Partner Channel,Solar EPC Contractor,565000,Contacted,2024-09-18,Revanth Barik,Ajman,EPC,Solar Panels
+L121,Skyline Helios Power Solutions,Sales Referral,Government / Semi-Government,840000,Quotation Sent,2025-06-29,Omar Ali,Oman,Government Client,Complete Solar Kit
+L122,Skyline Lumen Systems,Repeat Customer,Facility Management,105000,Quotation Sent,2024-01-20,Sarah Mathew,Abu Dhabi,Installer,Cables & Accessories
+L123,Skyline Power Installations,Repeat Customer,Real Estate Developer,805000,New Inquiry,2025-02-18,Aisha Khan,Oman,Distributor,Cables & Accessories
+L124,Skyline Power Solar,WhatsApp Inquiry,Government / Semi-Government,2130000,New Inquiry,2024-09-06,Sarah Mathew,Fujairah,Government Client,Cables & Accessories
+L125,Skyline Radiance Renewables,Partner Channel,Commercial & Industrial,860000,Contacted,2024-12-07,Omar Ali,Oman,Commercial Client,Complete Solar Kit
+L126,Skyline Solar Projects,Trade Exhibition,Commercial & Industrial,885000,Qualified,2025-10-22,Omar Ali,Africa Export,Export Customer,Inverters
+L127,Solar Current Installations,Partner Channel,Commercial & Industrial,565000,Contacted,2025-09-08,Omar Ali,Sharjah,Export Customer,Solar Panels
+L128,Solar Power Renewables,Zoho Campaign,Residential Installer,430000,Converted,2025-08-16,Sarah Mathew,Saudi Arabia,Installer,Cables & Accessories
+L129,Solar Radiance Renewables,Sales Referral,Facility Management,520000,New Inquiry,2025-04-25,Sarah Mathew,Fujairah,Commercial Client,Batteries
+L130,Solar Solar EPC,WhatsApp Inquiry,Solar EPC Contractor,770000,Quotation Sent,2025-04-07,Aisha Khan,Fujairah,EPC,Batteries
+L131,SunPeak Lumen Power Solutions,Repeat Customer,Commercial & Industrial,1120000,Converted,2025-07-21,Aisha Khan,Abu Dhabi,Commercial Client,Cables & Accessories
+L132,SunPeak Lumen Systems,Zoho Campaign,Trading Partner,605000,Contacted,2024-03-04,Sarah Mathew,Fujairah,Distributor,Batteries
+L133,SunPeak Photon Distribution,Sales Referral,Commercial & Industrial,230000,Contacted,2025-12-25,Sarah Mathew,Africa Export,Export Customer,Mounting Structures
+L134,SunPeak Photon Solar,Cold Outreach,Residential Installer,185000,Quotation Sent,2025-02-22,Revanth Barik,Fujairah,Installer,Solar Panels
+L135,SunPeak Photon Systems,Cold Outreach,Facility Management,160000,Converted,2025-11-25,Sarah Mathew,Abu Dhabi,Commercial Client,Complete Solar Kit
+L136,SunPeak Ray Solar,WhatsApp Inquiry,Residential Installer,340000,Lost,2024-05-24,Revanth Barik,Fujairah,Installer,Complete Solar Kit
+L137,SunPeak Solar Contracting,WhatsApp Inquiry,Real Estate Developer,850000,Converted,2025-01-20,Revanth Barik,Sharjah,Export Customer,Complete Solar Kit
+L138,SunPeak Sun Installations,Cold Outreach,Commercial & Industrial,190000,Qualified,2024-11-12,Omar Ali,Oman,Installer,Mounting Structures
+L139,SunPeak Volt EPC,Sales Referral,Trading Partner,240000,New Inquiry,2024-10-29,Aisha Khan,Ajman,Distributor,Cables & Accessories
+L140,Volt Beam Solar,Sales Referral,Solar EPC Contractor,910000,Contacted,2024-06-15,Omar Ali,Fujairah,Government Client,Inverters
+L141,Volt Energy Solar,Repeat Customer,Government / Semi-Government,1830000,Lost,2024-08-31,Sarah Mathew,Dubai,Government Client,Complete Solar Kit
+L142,Volt Helios EPC,Trade Exhibition,Government / Semi-Government,1600000,Quotation Sent,2024-07-17,Revanth Barik,Ajman,Government Client,Cables & Accessories
+L143,Volt Lumen Contracting,Partner Channel,Government / Semi-Government,1900000,Converted,2025-06-24,Sarah Mathew,Saudi Arabia,Distributor,Cables & Accessories
+L144,Volt Lumen Energy Trading,Website Inquiry,Residential Installer,370000,Quotation Sent,2025-01-15,Zayed Hussain,Ras Al Khaimah,Export Customer,Cables & Accessories
+L145,Volt Lumen Systems,WhatsApp Inquiry,Commercial & Industrial,485000,Qualified,2025-04-05,Zayed Hussain,Ras Al Khaimah,Commercial Client,Mounting Structures
+L146,Volt Photon Projects,Zoho Campaign,Commercial & Industrial,885000,New Inquiry,2025-02-28,Aisha Khan,Ajman,Commercial Client,Batteries
+L147,Volt Radiance EPC,WhatsApp Inquiry,Trading Partner,475000,Contacted,2024-01-29,Revanth Barik,Oman,Export Customer,Complete Solar Kit
+L148,Volt Ray Solar,Sales Referral,Facility Management,100000,Qualified,2025-04-28,Omar Ali,Sharjah,Commercial Client,Mounting Structures
+L149,Volt Volt Renewables,Website Inquiry,Solar EPC Contractor,655000,Contacted,2024-06-02,Zayed Hussain,Abu Dhabi,Government Client,Cables & Accessories
+L150,Volt Volt Systems,Partner Channel,Real Estate Developer,700000,Qualified,2024-05-04,Aisha Khan,Abu Dhabi,Commercial Client,Complete Solar Kit

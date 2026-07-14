@@ -1,0 +1,8 @@
+streamlit
+pandas
+matplotlib
+langgraph
+chromadb
+ollama
+requests
+pytest
