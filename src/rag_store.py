@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import re
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,11 @@ from src.analytics import (
     get_sales_rep_performance,
     get_weakest_forecast_quality_by_product_category,
 )
-from src.config import CHROMA_DB_DIR, RAG_COLLECTION_NAME
+from src.config import (
+    CHROMA_DB_DIR,
+    RAG_COLLECTION_NAME,
+    embedding_provider_identity,
+)
 from src.llm import get_local_embedding
 
 try:
@@ -29,11 +34,23 @@ except ImportError:  # pragma: no cover - safe runtime fallback
 
 _LAST_RAG_STATUS: dict[str, Any] = {
     "available": chromadb is not None,
-    "collection_name": RAG_COLLECTION_NAME,
+    "collection_name": "",
     "path": str(CHROMA_DB_DIR),
     "document_count": 0,
     "last_error": None,
 }
+
+
+def get_embedding_collection_name() -> str:
+    """Isolate Chroma collections across embedding providers and models."""
+    provider, model = embedding_provider_identity()
+    suffix = re.sub(r"[^a-z0-9_-]+", "_", f"{provider}_{model}".lower()).strip("_")
+    base = re.sub(r"[^a-z0-9_-]+", "_", RAG_COLLECTION_NAME.lower()).strip("_")
+    collection_name = f"{base}__{suffix}"[:63].strip("_")
+    return collection_name if len(collection_name) >= 3 else "insightflow_context"
+
+
+_LAST_RAG_STATUS["collection_name"] = get_embedding_collection_name()
 
 FORECAST_CATEGORY_DEFINITIONS = {
     "Pipeline": "Pipeline contains open opportunities that are active but still early or uncertain and should be reviewed for progression risk.",
@@ -103,7 +120,7 @@ def initialize_rag_store() -> dict[str, Any]:
     try:
         Path(CHROMA_DB_DIR).mkdir(parents=True, exist_ok=True)
         client = chromadb.PersistentClient(path=str(CHROMA_DB_DIR))
-        collection = client.get_or_create_collection(name=RAG_COLLECTION_NAME)
+        collection = client.get_or_create_collection(name=get_embedding_collection_name())
         return _set_status(
             available=True,
             initialized=True,
@@ -125,7 +142,7 @@ def _get_collection():
         return None
     try:
         client = chromadb.PersistentClient(path=str(CHROMA_DB_DIR))
-        return client.get_or_create_collection(name=RAG_COLLECTION_NAME)
+        return client.get_or_create_collection(name=get_embedding_collection_name())
     except Exception as error:  # pragma: no cover - runtime safety
         _set_status(available=False, last_error=f"Failed to access collection: {error}")
         return None

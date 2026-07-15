@@ -17,9 +17,10 @@ from src.llm import (
     FOLLOWUP_GENERATION_OPTIONS,
     check_ollama_available,
     check_ollama_model_available,
+    check_text_provider_available,
     generate_fast_explanation,
 )
-from src.config import OLLAMA_TEXT_MODEL
+from src.config import LLM_PROVIDER, OLLAMA_TEXT_MODEL, llm_provider_identity
 
 ANALYTICS_VERBS = (
     "calculate",
@@ -909,6 +910,8 @@ def make_explanation_cache_key(
     """Return a stable cache key for follow-up explanations."""
     payload = {
         "followup_prompt_version": FOLLOWUP_PROMPT_VERSION,
+        "llm_provider": llm_provider_identity()[0],
+        "llm_model": llm_provider_identity()[1],
         "followup_question": followup_question,
         "answer_title": last_answer_context.get("answer_title"),
         "computed_answer": last_answer_context.get("computed_answer"),
@@ -933,6 +936,16 @@ def _rewrite_followup_for_analytics(
 ) -> str:
     """Resolve only conservative context carryover before Pandas routing."""
     return resolve_followup_entities_from_context(followup_question, last_answer_context)
+
+
+def _explanation_provider_is_available() -> bool:
+    """Keep local Ollama checks patchable while routing hosted mode correctly."""
+    if LLM_PROVIDER == "ollama":
+        return (
+            check_ollama_available()
+            and check_ollama_model_available(OLLAMA_TEXT_MODEL)
+        )
+    return check_text_provider_available()
 
 
 def answer_followup_question(
@@ -1100,18 +1113,16 @@ def answer_followup_question(
                     unsupported_reason="qualitative_followup_not_grounded",
                 )
             trace["grounding_decision"] = "grounded"
-            if not (
-                check_ollama_available()
-                and check_ollama_model_available(OLLAMA_TEXT_MODEL)
-            ):
+            if not _explanation_provider_is_available():
                 return finish(
                     {
                         "answer_type": "unsupported",
                         "title": "Follow-up Explanation Unavailable",
                         "answer": (
-                            "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work."
+                            "The configured explanation provider is unavailable. "
+                            "Computed Pandas answers still work."
                         ),
-                        "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
+                        "recommended_action": "Ask a calculation or chart follow-up, or configure the explanation provider to enable qualitative follow-ups.",
                         "answer_source": "unsupported",
                     },
                     final_route="unsupported",
@@ -1147,7 +1158,7 @@ def answer_followup_question(
             start_time = time.perf_counter()
             try:
                 trace["ollama_called"] = True
-                response = generate_fast_explanation(prompt, model=OLLAMA_TEXT_MODEL)
+                response = generate_fast_explanation(prompt)
             except Exception as error:
                 trace["ollama_error"] = str(error)
                 return finish(

@@ -81,6 +81,25 @@ def test_build_rag_documents_include_deal_stage_definitions():
     assert "Closed Won" in topics
 
 
+def test_embedding_collection_isolated_by_provider_and_model(monkeypatch):
+    monkeypatch.setattr(
+        rag_store,
+        "embedding_provider_identity",
+        lambda: ("ollama", "nomic-embed-text"),
+    )
+    ollama_collection = rag_store.get_embedding_collection_name()
+    monkeypatch.setattr(
+        rag_store,
+        "embedding_provider_identity",
+        lambda: ("openai", "text-embedding-3-small"),
+    )
+    openai_collection = rag_store.get_embedding_collection_name()
+
+    assert ollama_collection != openai_collection
+    assert "ollama" in ollama_collection
+    assert "openai" in openai_collection
+
+
 def test_build_rag_documents_include_metric_definitions():
     documents = rag_store.build_rag_documents(_sample_leads(), _sample_deals())
     texts = [document["text"] for document in documents]

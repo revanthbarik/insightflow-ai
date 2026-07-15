@@ -655,3 +655,21 @@ def test_unsupported_pandas_action_route_falls_back_to_grounded_ollama(monkeypat
 
     assert response["answer_source"] == "Ollama follow-up explanation"
     assert response["followup_intent_bucket"] == "qualitative_contextual"
+
+
+def test_explanation_cache_key_isolated_by_provider_and_model(monkeypatch):
+    context = _last_answer_context()
+    monkeypatch.setattr(followup, "llm_provider_identity", lambda: ("ollama", "llama3.1"))
+    ollama_key = followup.make_explanation_cache_key(
+        "what does this mean?",
+        context,
+        "qualitative_contextual",
+    )
+    monkeypatch.setattr(followup, "llm_provider_identity", lambda: ("openai", "gpt-4o-mini"))
+    openai_key = followup.make_explanation_cache_key(
+        "what does this mean?",
+        context,
+        "qualitative_contextual",
+    )
+
+    assert ollama_key != openai_key

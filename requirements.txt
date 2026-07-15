@@ -4,5 +4,7 @@ plotly
 langgraph
 chromadb
 ollama
+openai>=2.45.0
+python-dotenv
 requests
 pytest

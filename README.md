@@ -25,7 +25,7 @@
 
 **InsightFlow AI** is a local-first revenue operations dashboard for teams that need fast, private pipeline analysis. Load synthetic demo data or upload Zoho CRM CSV exports, explore leads and deals, surface Auto Insights, and ask metric, chart, and management questions — all on your machine.
 
-Calculations are **deterministic Pandas**. Charts are **Plotly**. Optional **Ollama** explanations never compute totals. Company data never leaves the workstation.
+Calculations are **deterministic Pandas**. Charts are **Plotly**. In the default local mode, optional **Ollama** explanations never compute totals and company data stays on the workstation. OpenAI is an explicit opt-in provider for hosted demos.
 
 > **Positioning:** A focused private analytics assistant for secure demos and offline RevOps workflows — complementary to enterprise BI, not a Zoho Analytics replacement.
 
@@ -361,30 +361,26 @@ InsightFlow AI is intentionally scoped as a **local prototype**. These boundarie
 
 ## Railway deployment
 
-InsightFlow supports a practical two-service Railway deployment:
-
-1. **App service** — build from the included `Dockerfile`. Railway supplies `PORT`; the container starts Streamlit on `0.0.0.0:$PORT`.
-2. **Ollama service** — expose port `11434` to the app service internally and make these models available:
-   - `llama3.1`
-   - `nomic-embed-text`
+For Railway, deploy one **app service** from the included `Dockerfile`. Railway supplies `PORT`; the container starts Streamlit on `0.0.0.0:$PORT`. The recommended hosted mode uses OpenAI, so an Ollama service is not required.
 
 Set these app-service environment variables (see `.env.example`):
 
 ```env
-OLLAMA_BASE_URL=http://<private-ollama-service>:11434
-OLLAMA_TEXT_MODEL=llama3.1
-OLLAMA_EMBED_MODEL=nomic-embed-text
+LLM_PROVIDER=openai
+EMBEDDING_PROVIDER=openai
+OPENAI_API_KEY=<Railway secret>
+OPENAI_TEXT_MODEL=gpt-4o-mini
+OPENAI_EMBED_MODEL=text-embedding-3-small
 CHROMA_PERSIST_DIR=/data/chroma_db
 ```
 
 Attach persistent storage:
 
 - **App service:** mount a volume at the directory assigned to `CHROMA_PERSIST_DIR`. It holds ChromaDB's internal vector-store files, including its SQLite backing file.
-- **Ollama service:** for the official Ollama image, mount a persistent volume at `/root/.ollama` so models are not re-downloaded after restart.
 
 The bundled `data/leads.csv` and `data/deals.csv` remain read-only demo defaults. Uploaded CSVs, exports, Ask results, and chat history are intentionally in-memory for this demo-oriented deployment and are not retained across restarts.
 
-If Ollama is not ready at app startup, InsightFlow retries failed HTTP connections a bounded number of times and then continues in deterministic Pandas-only mode until Ollama becomes reachable.
+For the intended fully private/offline setup, omit the provider variables (or set both to `ollama`), run Ollama locally with `llama3.1` and `nomic-embed-text`, and retain the local `OLLAMA_BASE_URL=http://localhost:11434` default. Chroma collections are isolated by embedding provider and model, so switching providers creates a separate collection that must be populated through the normal refresh flow.
 
 ---
 

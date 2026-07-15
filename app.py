@@ -44,11 +44,17 @@ from src.followup import (
     build_last_answer_context,
 )
 from src.llm import (
-    check_ollama_available,
-    check_ollama_model_available,
+    check_embedding_provider_available,
+    check_text_provider_available,
+    provider_status_message,
     synthesize_rag_answer,
 )
-from src.config import OLLAMA_EMBED_MODEL, OLLAMA_TEXT_MODEL
+from src.config import (
+    EMBEDDING_PROVIDER,
+    LLM_PROVIDER,
+    embedding_provider_identity,
+    llm_provider_identity,
+)
 from src.query_engine import answer_business_question
 from src.rag_store import (
     format_retrieved_context,
@@ -598,7 +604,7 @@ def build_rag_fallback_answer(
             f"Details: {error_message}"
         ),
         "recommended_action": (
-            "Check that Ollama is running, `nomic-embed-text` is available, and the local knowledge base has been refreshed."
+            "Check that the configured embedding provider and model are available, then refresh the local knowledge base."
         ),
         "answer_source": "unsupported",
     }
@@ -678,7 +684,7 @@ def resolve_question_response(
                 answer_text = retrieved_context
         else:
             answer_text = (
-                "Ollama is not available. Showing computed/RAG context without local AI synthesis.\n\n"
+                "The configured explanation provider is unavailable. Showing computed/RAG context without synthesis.\n\n"
                 + retrieved_context
             )
 
@@ -721,12 +727,24 @@ st.title("InsightFlow AI")
 st.caption("Private Revenue Operations Agent · Local data · Deterministic analytics")
 
 with st.sidebar:
-    st.header("Local Offline Prototype")
+    active_text_provider, active_text_model = llm_provider_identity()
+    active_embedding_provider, active_embedding_model = embedding_provider_identity()
+    if LLM_PROVIDER == "ollama" and EMBEDDING_PROVIDER == "ollama":
+        st.header("Local Offline Prototype")
+        st.caption("Local mode: explanations and embeddings run through Ollama.")
+    else:
+        st.header("Hosted Demo Mode")
+        st.caption(
+            "Hosted demo mode: deterministic calculations remain in Pandas. "
+            "Qualitative context and embeddings use the configured OpenAI API. "
+            "Run locally with Ollama for fully offline operation."
+        )
+    st.markdown("**Active AI providers**")
     st.markdown(
-        """
-        - **Runtime:** Local laptop
-        - **Cloud APIs:** Disabled
-        """
+        f":green-badge[Text: {active_text_provider} · {active_text_model}]"
+    )
+    st.markdown(
+        f":blue-badge[Embeddings: {active_embedding_provider} · {active_embedding_model}]"
     )
 
     st.header("Data Source")
@@ -859,16 +877,20 @@ if st.session_state.rag_refresh_attempted_signature != data_signature:
 
 with st.sidebar:
     st.header("Local AI / RAG Status")
-    ollama_available = check_ollama_available()
-    text_model_available = check_ollama_model_available(OLLAMA_TEXT_MODEL)
-    embed_model_available = check_ollama_model_available(OLLAMA_EMBED_MODEL)
+    text_provider_available = check_text_provider_available()
+    embedding_provider_available = check_embedding_provider_available()
+    text_provider, text_model = llm_provider_identity()
+    embedding_provider, embedding_model = embedding_provider_identity()
     rag_status = get_rag_status()
     if st.session_state.rag_refresh_status is not None:
         rag_status.update(st.session_state.rag_refresh_status)
 
-    st.markdown(f"- **Ollama available:** {'Yes' if ollama_available else 'No'}")
-    st.markdown(f"- **{OLLAMA_TEXT_MODEL} available:** {'Yes' if text_model_available else 'No'}")
-    st.markdown(f"- **{OLLAMA_EMBED_MODEL} available:** {'Yes' if embed_model_available else 'No'}")
+    st.markdown(
+        f"- **Text provider ({text_provider} / {text_model}):** {'Yes' if text_provider_available else 'No'}"
+    )
+    st.markdown(
+        f"- **Embedding provider ({embedding_provider} / {embedding_model}):** {'Yes' if embedding_provider_available else 'No'}"
+    )
     st.markdown(f"- **ChromaDB ready:** {'Yes' if rag_status.get('available') else 'No'}")
     st.markdown(f"- **Indexed documents:** {rag_status.get('document_count', 0)}")
 
@@ -889,6 +911,9 @@ with st.sidebar:
 
     if rag_status.get("last_error"):
         st.warning(rag_status["last_error"])
+    for provider in {LLM_PROVIDER, EMBEDDING_PROVIDER}:
+        if message := provider_status_message(provider):
+            st.warning(message)
     if st.session_state.rag_data_signature != data_signature:
         st.warning("Data changed. Refresh local knowledge base to update RAG context.")
     if not rag_status.get("available"):
@@ -1066,7 +1091,8 @@ with ask_tab:
 
     st.subheader("Ask InsightFlow AI")
     st.caption(
-        "Metrics, tables, and charts are computed with Pandas. Plotly renders the presentation layer. Ollama, when enabled, only explains computed output."
+        "Metrics, tables, and charts are computed with Pandas. Plotly renders the presentation layer. "
+        "The configured language provider only explains computed output."
     )
 
     with st.expander("Sample supported questions"):

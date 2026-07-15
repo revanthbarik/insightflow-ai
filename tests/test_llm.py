@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import requests
+from types import SimpleNamespace
 
 from src import llm
+from src import config
 
 
 def test_check_ollama_available_handles_connection_error(monkeypatch):
@@ -80,3 +82,80 @@ def test_fast_explanation_preserves_structured_response_without_sentence_trimmin
 
     assert response["content"] == structured_response
     assert captured["payload"]["options"]["num_predict"] == 240
+
+
+def test_default_provider_uses_ollama_without_openai(monkeypatch):
+    monkeypatch.setattr(llm, "LLM_PROVIDER", "ollama")
+    monkeypatch.setattr(llm, "_generate_with_ollama", lambda prompt, model=None: {"ok": True})
+    monkeypatch.setattr(
+        llm,
+        "_generate_with_openai",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("OpenAI called")),
+    )
+
+    assert llm.generate_local_response("Grounded prompt") == {"ok": True}
+
+
+def test_openai_response_is_normalized_without_real_request(monkeypatch):
+    captured: dict[str, object] = {}
+
+    class FakeResponses:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(output_text="Grounded qualitative explanation")
+
+    monkeypatch.setattr(llm, "LLM_PROVIDER", "openai")
+    monkeypatch.setattr(llm, "OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(config, "OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(
+        llm,
+        "_get_openai_client",
+        lambda: SimpleNamespace(responses=FakeResponses()),
+    )
+    monkeypatch.setattr(
+        llm,
+        "_generate_with_ollama",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Ollama called")),
+    )
+
+    response = llm.generate_local_response("Use only supplied numbers.")
+
+    assert response["ok"] is True
+    assert response["content"] == "Grounded qualitative explanation"
+    assert response["provider"] == "openai"
+    assert captured["model"] == llm.OPENAI_TEXT_MODEL
+    assert "Use only" in captured["input"]
+
+
+def test_openai_embedding_returns_chroma_compatible_vector(monkeypatch):
+    class FakeEmbeddings:
+        def create(self, **kwargs):
+            assert kwargs["model"] == llm.OPENAI_EMBED_MODEL
+            return SimpleNamespace(data=[SimpleNamespace(embedding=[0.1, 0.2])])
+
+    monkeypatch.setattr(llm, "EMBEDDING_PROVIDER", "openai")
+    monkeypatch.setattr(llm, "OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(config, "OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(
+        llm,
+        "_get_openai_client",
+        lambda: SimpleNamespace(embeddings=FakeEmbeddings()),
+    )
+    monkeypatch.setattr(
+        llm,
+        "_embed_with_ollama",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Ollama called")),
+    )
+
+    assert llm.get_local_embedding("compact context") == [0.1, 0.2]
+
+
+def test_openai_without_key_returns_safe_controlled_error(monkeypatch):
+    monkeypatch.setattr(llm, "LLM_PROVIDER", "openai")
+    monkeypatch.setattr(llm, "OPENAI_API_KEY", "")
+    monkeypatch.setattr(config, "OPENAI_API_KEY", "")
+
+    response = llm.generate_local_response("Grounded prompt")
+
+    assert response["ok"] is False
+    assert response["error"] == "OpenAI provider is selected but OPENAI_API_KEY is not configured."
