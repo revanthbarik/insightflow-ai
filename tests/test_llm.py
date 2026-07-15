@@ -60,3 +60,23 @@ def test_synthesize_computed_answer_returns_safe_message_when_context_is_incompl
     )
     assert response["ok"] is True
     assert "not enough structured context" in response["content"].lower()
+
+
+def test_fast_explanation_preserves_structured_response_without_sentence_trimming(monkeypatch):
+    structured_response = (
+        "**What this indicates**\nA.\n\n"
+        "**Likely causes to investigate**\nB.\n\n"
+        "**Practical next steps**\nC.\n\n"
+        "**Recommended follow-up analysis**\nD."
+    )
+    captured: dict[str, object] = {}
+
+    def _fake_request(method, endpoint, payload=None):
+        captured["payload"] = payload
+        return {"response": structured_response}, None
+
+    monkeypatch.setattr(llm, "_safe_json_request", _fake_request)
+    response = llm.generate_fast_explanation("Prompt")
+
+    assert response["content"] == structured_response
+    assert captured["payload"]["options"]["num_predict"] == 240

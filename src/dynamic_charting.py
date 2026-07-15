@@ -8,7 +8,6 @@ from typing import Any
 import pandas as pd
 
 from src.analytics import format_aed_compact
-from src.charting import PROFESSIONAL_COLORS, render_categorical_chart
 
 CHART_INTENT_KEYWORDS = (
     "chart",
@@ -396,33 +395,6 @@ def _aggregate_chart_data(chart_spec: dict[str, Any], df: pd.DataFrame) -> pd.Da
     return summary.rename(columns={x_column: chart_spec["x_column"]})
 
 
-def _slugify_title(title: str) -> str:
-    """Return a filename-safe title slug."""
-    return re.sub(r"[^a-z0-9]+", "_", title.lower()).strip("_")
-
-
-def _build_value_axis_label(chart_spec: dict[str, Any]) -> str:
-    """Return a readable y-axis label for the generated chart."""
-    aggregation = chart_spec["aggregation"]
-    dataset = chart_spec["dataset"]
-    y_column = chart_spec["y_column"]
-    filters = chart_spec.get("filters", {})
-
-    if aggregation == "count":
-        return "Lead Count" if dataset == "leads" else "Deal Count"
-    if aggregation == "mean" and y_column == "Amount":
-        return "Average Deal Size"
-    if aggregation == "mean" and y_column == "Estimated_Value":
-        return "Average Estimated Lead Value"
-    if y_column == "Amount" and filters.get("Forecast_Category") == "Pipeline":
-        return "Pipeline Amount"
-    if y_column == "Amount":
-        return "Revenue"
-    if y_column == "Estimated_Value":
-        return "Estimated Lead Value"
-    return y_column.replace("_", " ")
-
-
 def _build_chart_explanation(chart_spec: dict[str, Any], chart_data: pd.DataFrame) -> tuple[str, str]:
     """Create a short explanation and recommended action from computed data."""
     if chart_data.empty:
@@ -519,19 +491,6 @@ def generate_dynamic_chart(
             ),
         )
 
-    chart_path = render_categorical_chart(
-        data=chart_data,
-        x_column=chart_spec["x_column"],
-        y_column="Value",
-        title=chart_spec["title"],
-        chart_filename=f"{_slugify_title(chart_spec['title'])}.png",
-        color=PROFESSIONAL_COLORS["dynamic"],
-        chart_type=chart_spec["chart_type"],
-        empty_message="No matching data is available for this dynamic chart.",
-        x_label=chart_spec["x_column"].replace("_", " "),
-        y_label=_build_value_axis_label(chart_spec),
-        sort_desc=chart_spec.get("time_grain") is None,
-    )
     explanation, recommended_action = _build_chart_explanation(chart_spec, chart_data)
     return {
         "answer_type": "dynamic_chart",
@@ -539,7 +498,6 @@ def generate_dynamic_chart(
         "answer": "Showing a dynamically generated chart based on the active dataset.",
         "recommended_action": recommended_action,
         "data": chart_data,
-        "chart_path": chart_path,
         "chart_spec": chart_spec,
         "explanation": explanation,
     }

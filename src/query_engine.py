@@ -7,14 +7,12 @@ from typing import Any
 import pandas as pd
 
 from src.generic_analytics import (
-    bottom_n,
     forecast_quality,
     group_average,
     group_count,
     group_sum,
     lead_source_conversion,
     time_trend,
-    top_n,
     win_rate,
 )
 from src.query_parser import ParsedQuery, parse_business_question

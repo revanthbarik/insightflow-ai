@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 import time
 from datetime import datetime, timezone
 from typing import Any
@@ -12,6 +14,7 @@ import pandas as pd
 
 from src.query_engine import answer_business_question
 from src.llm import (
+    FOLLOWUP_GENERATION_OPTIONS,
     check_ollama_available,
     check_ollama_model_available,
     generate_fast_explanation,
@@ -116,6 +119,10 @@ BUSINESS_RECOMMENDATION_KEYWORDS = (
     "next steps",
     "recommend",
     "action",
+    "address",
+    "reduce",
+    "improve",
+    "prioritize",
 )
 CLARIFICATION_PHRASES = (
     "what is forecast quality",
@@ -137,8 +144,159 @@ UNRELATED_PHRASES = (
     "write code",
 )
 CHART_NOUNS = ("chart", "graph", "visual")
+CONTEXTUAL_ACTION_MARKERS = (
+    "how should",
+    "how can",
+    "what should",
+    "what can",
+    "next",
+    "address",
+    "reduce",
+    "improve",
+    "focus",
+    "action",
+)
+QUALITATIVE_ACTION_PATTERNS = (
+    r"\bhow\s+(?:can|should|do)\b",
+    r"\bwhat\s+(?:can|should)\b.*\b(?:do|take|address|reduce|improve|focus)\b",
+    r"\bwhat\s+.*\b(?:steps?|actions?|recommendations?)\b",
+    r"\b(?:steps?|actions?)\s+(?:to|for)\b",
+    r"\bwhy\s+(?:might|is|are|does|do)\b",
+    r"\bwhat\s+does\s+(?:this|that|the)\b.*\bmean\b",
+)
+DOMAIN_TERMS = {
+    "stage",
+    "stages",
+    "region",
+    "source",
+    "lead",
+    "leads",
+    "deal",
+    "deals",
+    "sales",
+    "rep",
+    "forecast",
+    "product",
+    "category",
+    "pipeline",
+    "revenue",
+    "amount",
+    "margin",
+    "conversion",
+    "win",
+    "lost",
+    "won",
+    "risk",
+}
+TOKEN_STOP_WORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "by",
+    "can",
+    "do",
+    "does",
+    "for",
+    "from",
+    "how",
+    "i",
+    "in",
+    "is",
+    "it",
+    "me",
+    "of",
+    "on",
+    "or",
+    "should",
+    "that",
+    "the",
+    "this",
+    "to",
+    "us",
+    "we",
+    "what",
+    "why",
+    "with",
+}
 
 EXPLANATION_CACHE: dict[str, dict[str, Any]] = {}
+FOLLOWUP_PROMPT_VERSION = "FOLLOWUP_ACTION_PROMPT_V2"
+
+
+def _followup_debug_enabled() -> bool:
+    """Return whether terminal-only follow-up tracing is enabled."""
+    return os.getenv("INSIGHTFLOW_DEBUG_FOLLOWUP", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _followup_trace_context(last_answer_context: dict[str, Any] | None) -> dict[str, Any]:
+    """Build a compact, non-tabular trace of the session context used for routing."""
+    context = last_answer_context or {}
+    preview_entities: list[str] = []
+    for row in context.get("table_preview", []) or []:
+        for value in row.values():
+            if isinstance(value, str) and value not in preview_entities:
+                preview_entities.append(value)
+
+    return {
+        "original_user_question": context.get("original_user_question"),
+        "prior_answer_title": context.get("answer_title"),
+        "prior_answer_source": context.get("answer_source"),
+        "has_computed_answer": bool(context.get("computed_answer")),
+        "has_chart_data": bool(context.get("chart_type") or context.get("table_preview")),
+        "has_rag_context": bool(context.get("retrieved_rag_context")),
+        "resolved_topic": context.get("business_object") or context.get("main_entity"),
+        "extracted_entities": preview_entities[:5],
+    }
+
+
+def _emit_followup_debug_trace(trace: dict[str, Any]) -> None:
+    """Print one structured terminal trace when follow-up debug is enabled."""
+    if not _followup_debug_enabled():
+        return
+    print(
+        "\n=== FOLLOW-UP DEBUG TRACE ===\n"
+        + json.dumps(trace, default=str, indent=2, sort_keys=True)
+        + "\n=== END FOLLOW-UP DEBUG TRACE ===",
+        flush=True,
+    )
+
+
+def _is_action_or_interpretation_followup(question: str) -> bool:
+    """Identify non-calculating business action and interpretation requests."""
+    question_lower = question.lower().strip()
+    return any(
+        re.search(pattern, question_lower) for pattern in QUALITATIVE_ACTION_PATTERNS
+    ) or any(
+        marker in question_lower
+        for marker in (
+            "management",
+            "next steps",
+            "suitable steps",
+            "recommend",
+            "interpret",
+            "meaning",
+            "explain",
+        )
+    )
+
+
+def _is_quantitative_ranking_followup(question: str) -> bool:
+    """Keep explicit requests to identify a top or bottom entity deterministic."""
+    return bool(
+        re.search(
+            r"\bwhich\s+(?:sales\s+rep|customer\s+segment|region|source|product\s+category)"
+            r"\b.*\b(?:highest|lowest|best|worst|priority)\b",
+            question.lower(),
+        )
+    )
 
 
 def classify_followup_intent(
@@ -152,6 +310,19 @@ def classify_followup_intent(
 
     if any(phrase in question_lower for phrase in UNRELATED_PHRASES):
         return "unrelated"
+
+    if _is_quantitative_ranking_followup(question_lower):
+        return "analytics"
+
+    # Wording that asks for action or interpretation takes precedence over
+    # mentioned entities such as "deals" or "stage"; entities establish relevance,
+    # not the calculation route.
+    if _is_action_or_interpretation_followup(question_lower):
+        return (
+            "explanation"
+            if any(keyword in question_lower for keyword in EXPLANATION_KEYWORDS)
+            else "business_recommendation"
+        )
 
     analytics_override_tokens = (
         "compare",
@@ -187,6 +358,12 @@ def classify_followup_intent(
     if any(phrase in question_lower for phrase in NEW_CHART_PHRASES):
         return "analytics"
 
+    if any(
+        phrase in question_lower
+        for phrase in ("total ", "sum ", "count ", "average ", "avg ", "total amount")
+    ):
+        return "analytics"
+
     if any(question_lower.startswith(prefix) for prefix in CLARIFICATION_PREFIXES):
         return "clarification"
 
@@ -195,6 +372,9 @@ def classify_followup_intent(
 
     if any(keyword in question_lower for keyword in EXPLANATION_KEYWORDS):
         return "explanation"
+
+    if any(marker in question_lower for marker in CONTEXTUAL_ACTION_MARKERS):
+        return "business_recommendation"
 
     if any(verb in question_lower for verb in ANALYTICS_VERBS) and (
         any(metric in question_lower for metric in ANALYTICS_METRICS)
@@ -218,33 +398,273 @@ def classify_followup_intent(
     return "ambiguous"
 
 
-def build_followup_prompt(
+def _tokenize(text: object) -> set[str]:
+    """Return normalized meaningful tokens for a lightweight relevance score."""
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", str(text).lower())
+        if len(token) > 1 and token not in TOKEN_STOP_WORDS
+    }
+
+
+def _has_deictic_reference(text: str) -> bool:
+    tokens = set(re.findall(r"[a-z0-9]+", text.lower()))
+    if tokens.intersection({"this", "these", "it", "here", "there"}):
+        return True
+    return bool(re.search(r"\bthat\s+(?:result|chart|stage|source|region|category)\b", text.lower()))
+
+
+def _context_text(last_answer_context: dict[str, Any]) -> str:
+    """Collect only stored result context that may safely establish continuity."""
+    context_values = [
+        last_answer_context.get("original_user_question", ""),
+        last_answer_context.get("answer_title", ""),
+        last_answer_context.get("answer_source", ""),
+        last_answer_context.get("computed_answer", ""),
+        last_answer_context.get("recommended_action", ""),
+        last_answer_context.get("metric_type", ""),
+        last_answer_context.get("business_object", ""),
+        last_answer_context.get("main_entity", ""),
+        last_answer_context.get("x_axis", ""),
+        last_answer_context.get("y_axis", ""),
+    ]
+    for observation in last_answer_context.get("key_observations", []) or []:
+        context_values.append(observation)
+    for row in last_answer_context.get("table_preview", []) or []:
+        context_values.extend([*row.keys(), *row.values()])
+    return " ".join(str(value) for value in context_values if value)
+
+
+def score_followup_relevance(
+    followup_question: str,
+    last_answer_context: dict[str, Any] | None,
+) -> int:
+    """Score whether a follow-up has a deterministic link to the current result."""
+    if not last_answer_context:
+        return 0
+
+    question_lower = followup_question.lower().strip()
+    if any(phrase in question_lower for phrase in UNRELATED_PHRASES):
+        return -3
+
+    question_tokens = _tokenize(question_lower)
+    context_tokens = _tokenize(_context_text(last_answer_context))
+    overlap = question_tokens.intersection(context_tokens)
+    domain_overlap = question_tokens.intersection(DOMAIN_TERMS).intersection(context_tokens)
+    has_result = bool(
+        last_answer_context.get("answer_title")
+        and (
+            last_answer_context.get("computed_answer")
+            or last_answer_context.get("table_preview")
+            or last_answer_context.get("key_observations")
+        )
+    )
+    score = 0
+    if _has_deictic_reference(question_lower) and has_result:
+        score += 2
+    if domain_overlap:
+        score += 2
+    elif overlap:
+        score += 1
+    if (
+        ("closed lost" in question_lower or "lost deal" in question_lower)
+        and ("stage" in context_tokens or "deal_stage" in context_tokens)
+    ):
+        score += 2
+    if has_result and any(
+        marker in question_lower
+        for marker in ("management", "focus", "next", "address", "reduce", "improve", "action")
+    ):
+        score += 2
+    return score
+
+
+def is_grounded_qualitative_followup(
+    followup_question: str,
+    last_answer_context: dict[str, Any] | None,
+) -> bool:
+    """Allow Ollama only when a qualitative request is tied to stored result facts."""
+    if not last_answer_context or score_followup_relevance(followup_question, last_answer_context) < 2:
+        return False
+    return bool(
+        last_answer_context.get("computed_answer")
+        or last_answer_context.get("table_preview")
+        or last_answer_context.get("key_observations")
+        or last_answer_context.get("retrieved_rag_context")
+    )
+
+
+def classify_followup_intent_bucket(intent: str) -> str:
+    """Collapse UI-oriented intent labels into the three routing buckets."""
+    if intent == "analytics":
+        return "quantitative"
+    if intent in {
+        "explanation",
+        "chart_improvement",
+        "business_recommendation",
+        "clarification",
+    }:
+        return "qualitative_contextual"
+    return "unrelated"
+
+
+def resolve_followup_entities_from_context(
     followup_question: str,
     last_answer_context: dict[str, Any],
 ) -> str:
-    """Build a strict grounded prompt for follow-up explanations only."""
+    """Conservatively resolve only unambiguous stage references from current context."""
+    question_lower = followup_question.lower()
+    context_text = _context_text(last_answer_context).lower()
+    answer_title = last_answer_context.get("answer_title", "the current result")
+    has_stage_context = "stage" in context_text or "deal_stage" in context_text
+
+    if has_stage_context and "lost deal" in question_lower and "closed lost" in context_text:
+        return f"{followup_question} for the Closed Lost deal stage"
+    if has_stage_context and "this stage" in question_lower:
+        return f"{followup_question} about {answer_title}"
+    if _has_deictic_reference(question_lower):
+        return f"{followup_question} about {answer_title}"
+    return followup_question
+
+
+def build_followup_suggestions_from_context(last_answer_context: dict[str, Any]) -> list[str]:
+    """Return a few relevant next prompts without opening general chat."""
+    context_text = _context_text(last_answer_context).lower()
+    if "stage" in context_text:
+        return [
+            "Compare this stage by region",
+            "Show only Closed Lost deals",
+            "Why might this stage be weak?",
+        ]
+    if "lead source" in context_text or "source" in context_text:
+        return [
+            "Compare this source by sales rep",
+            "What does this mean for lead quality?",
+            "What should management focus on next?",
+        ]
+    if "region" in context_text:
+        return [
+            "Compare this by sales rep",
+            "Show the trend by month",
+            "What should management do here?",
+        ]
+    if "forecast" in context_text or "pipeline" in context_text:
+        return [
+            "Break this down by sales rep",
+            "Show the trend by month",
+            "How should we address this?",
+        ]
+    return [
+        "What does this mean?",
+        "Compare this by region",
+        "What should management focus on next?",
+    ]
+
+
+def _unsupported_followup_response(
+    last_answer_context: dict[str, Any],
+    title: str = "Follow-up Out of Scope",
+) -> dict[str, Any]:
+    suggestions = build_followup_suggestions_from_context(last_answer_context)
+    return {
+        "answer_type": "unsupported",
+        "title": title,
+        "answer": (
+            "This follow-up is not clearly related to the current InsightFlow result. "
+            "Follow-up chat only supports questions related to the current InsightFlow result."
+        ),
+        "recommended_action": "Try: " + "; ".join(suggestions) + ".",
+        "answer_source": "unsupported",
+    }
+
+
+def _build_followup_grounding_context(last_answer_context: dict[str, Any]) -> dict[str, Any]:
+    """Select compact, computed-only context for a useful follow-up explanation."""
+    rag_context = last_answer_context.get("retrieved_rag_context") or []
+    return {
+        "original_user_question": last_answer_context.get("original_user_question"),
+        "answer_title": last_answer_context.get("answer_title"),
+        "answer_source": last_answer_context.get("answer_source"),
+        "computed_answer": last_answer_context.get("computed_answer"),
+        "result_topic": last_answer_context.get("business_object"),
+        "primary_entity": last_answer_context.get("main_entity"),
+        "primary_value": last_answer_context.get("main_value"),
+        "chart_or_table": {
+            "chart_type": last_answer_context.get("chart_type"),
+            "x_axis": last_answer_context.get("x_axis"),
+            "y_axis": last_answer_context.get("y_axis"),
+            "categories_and_values": last_answer_context.get("table_preview", [])[:5],
+        },
+        "computed_observations": last_answer_context.get("key_observations", [])[:5],
+        "existing_recommended_action": last_answer_context.get("recommended_action"),
+        "retrieved_rag_context": rag_context[:3],
+    }
+
+
+def build_followup_prompt(
+    followup_question: str,
+    last_answer_context: dict[str, Any],
+    intent: str | None = None,
+) -> str:
+    """Build a strict, intent-aware prompt for grounded follow-up explanations."""
     serialized_context = json.dumps(
-        last_answer_context,
+        _build_followup_grounding_context(last_answer_context),
         separators=(",", ":"),
         ensure_ascii=True,
         default=str,
         sort_keys=True,
     )
+    resolved_intent = intent or classify_followup_intent(
+        followup_question,
+        last_answer_context,
+    )
+    if resolved_intent == "business_recommendation":
+        response_format = (
+            "Use exactly these four Markdown headings, with one or two concise sentences under each:\n"
+            "**What this indicates**\n"
+            "**Likely causes to investigate**\n"
+            "**Practical next steps**\n"
+            "**Recommended follow-up analysis**\n"
+        )
+    elif resolved_intent in {"explanation", "clarification"}:
+        response_format = (
+            "Use exactly these three Markdown headings, with one or two concise sentences under each:\n"
+            "**What this means**\n"
+            "**Why it matters**\n"
+            "**Recommended next step**\n"
+        )
+    elif resolved_intent == "chart_improvement":
+        response_format = (
+            "Use exactly these three Markdown headings, with one or two concise sentences under each:\n"
+            "**What the visual should emphasize**\n"
+            "**Practical presentation improvements**\n"
+            "**Recommended management takeaway**\n"
+        )
+    else:
+        response_format = "Use short Markdown headings and give a concise, practical answer.\n"
+
     return (
+        f"{FOLLOWUP_PROMPT_VERSION}\n"
         "You are a business explainer for InsightFlow AI.\n"
         "Pandas has already computed the result.\n"
-        "Use only the provided computed_context.\n"
+        "Use only the provided deterministic_result_context.\n"
         "Do not calculate.\n"
         "Do not create new totals, averages, percentages, rankings, comparisons, or trends.\n"
         "Do not infer values from charts.\n"
         "Do not invent numbers.\n"
+        "Do not alter the supplied categories, values, or currency.\n"
         "Use AED only.\n"
         "If the user asks for a new metric/calculation/chart/ranking/comparison, say it must be routed to Pandas analytics.\n"
-        "Keep the answer under 4 sentences.\n"
-        "Give practical management next steps when useful.\n\n"
-        "For chart improvement requests, give specific suggestions like sorting, clearer labels, AED value labels, percentage share, highlighting risks, or adding a management takeaway.\n\n"
+        "Do not merely restate the chart or table.\n"
+        "Treat causes as hypotheses to investigate, never as facts that are not in the result.\n"
+        "For practical next steps, name concrete operational actions such as capturing loss reasons, assigning an owner, checking qualification criteria, or running a win-loss review when relevant.\n"
+        "Do not use filler such as 'review the sales process', 'review deal details', or 'improve the sales strategy' unless you also name the specific review, owner, criterion, or action required.\n"
+        "When recommending further analysis, propose one focused deterministic Pandas drill-down using only dimensions, categories, or filters named in the deterministic result context; do not invent a new dimension such as industry, product type, or salesperson.\n"
+        "Tie every interpretation and recommendation to the current deterministic result context.\n"
+        "Keep the response concise but complete, typically 100 to 170 words.\n\n"
+        f"RESPONSE FORMAT:\n{response_format}\n"
         f"FOLLOW-UP QUESTION:\n{followup_question}\n\n"
-        f"COMPUTED CONTEXT:\n{serialized_context}"
+        f"DETERMINISTIC RESULT CONTEXT:\n{serialized_context}"
     )
 
 
@@ -357,6 +777,24 @@ def build_computed_context(
             ]
             key_observations.append("Lead sources are sorted by Estimated Value descending, then Conversion Rate ascending.")
 
+    elif (
+        "stage" in title_lower
+        or (data_df is not None and "Deal_Stage" in data_df.columns)
+    ):
+        metric_type = "deal_stage_breakdown"
+        business_object = "deal stage performance"
+        main_entity = "deal stage"
+        key_observations.append("Deal stages are grouped from the Deal_Stage field.")
+        if data_df is not None and not data_df.empty:
+            safe_columns = [
+                column
+                for column in ["Deal_Stage", "Deal_Count", "Total_Amount"]
+                if column in data_df.columns
+            ]
+            table_preview = [
+                {key: _to_python_value(value) for key, value in row.items()}
+                for row in data_df[safe_columns].head(5).to_dict(orient="records")
+            ]
     elif "sales rep" in title_lower:
         metric_type = "sales_rep_performance"
         business_object = "sales performance"
@@ -466,15 +904,18 @@ def build_last_answer_context(
 def make_explanation_cache_key(
     followup_question: str,
     last_answer_context: dict[str, Any],
+    intent: str | None = None,
 ) -> str:
     """Return a stable cache key for follow-up explanations."""
     payload = {
+        "followup_prompt_version": FOLLOWUP_PROMPT_VERSION,
         "followup_question": followup_question,
         "answer_title": last_answer_context.get("answer_title"),
         "computed_answer": last_answer_context.get("computed_answer"),
         "recommended_action": last_answer_context.get("recommended_action"),
         "metric_type": last_answer_context.get("metric_type"),
         "answer_source": last_answer_context.get("answer_source"),
+        "intent": intent,
     }
     serialized = json.dumps(
         payload,
@@ -490,12 +931,8 @@ def _rewrite_followup_for_analytics(
     followup_question: str,
     last_answer_context: dict[str, Any],
 ) -> str:
-    """Lightly ground deictic follow-ups in the last answer title."""
-    question_lower = followup_question.lower().strip()
-    answer_title = last_answer_context.get("answer_title") or "the last result"
-    if any(token in question_lower for token in ("this", "it", "that result", "this result")):
-        return f"{followup_question} about {answer_title}"
-    return followup_question
+    """Resolve only conservative context carryover before Pandas routing."""
+    return resolve_followup_entities_from_context(followup_question, last_answer_context)
 
 
 def answer_followup_question(
@@ -507,19 +944,92 @@ def answer_followup_question(
     extra_tables: dict[str, pd.DataFrame] | None = None,
 ) -> dict[str, Any]:
     """Answer a controlled follow-up using either Pandas routing or Ollama explanation."""
+    trace: dict[str, Any] = {
+        "followup_question": followup_question,
+        **_followup_trace_context(last_answer_context),
+        "relevance_score": None,
+        "relevance_decision": "not_evaluated",
+        "intent": None,
+        "intent_bucket": None,
+        "grounding_decision": "not_evaluated",
+        "final_route": None,
+        "ollama_called": False,
+        "ollama_cache_hit": False,
+        "pandas_called": False,
+        "unsupported_reason": None,
+    }
+
+    def finish(
+        response: dict[str, Any],
+        *,
+        final_route: str,
+        unsupported_reason: str | None = None,
+    ) -> dict[str, Any]:
+        trace["final_route"] = final_route
+        trace["unsupported_reason"] = unsupported_reason
+        trace["response_answer_type"] = response.get("answer_type")
+        trace["response_answer_source"] = response.get("answer_source")
+        _emit_followup_debug_trace(trace)
+        return response
+
     if not last_answer_context:
-        return {
-            "answer_type": "unsupported",
-            "title": "Follow-up Unavailable",
-            "answer": "Please ask a main question first before using follow-up chat.",
-            "recommended_action": "Ask a main InsightFlow question to create a result for follow-up discussion.",
-            "answer_source": "unsupported",
-        }
+        return finish(
+            {
+                "answer_type": "unsupported",
+                "title": "Follow-up Unavailable",
+                "answer": "Please ask a main question first before using follow-up chat.",
+                "recommended_action": "Ask a main InsightFlow question to create a result for follow-up discussion.",
+                "answer_source": "unsupported",
+            },
+            final_route="unsupported",
+            unsupported_reason="missing_last_answer_context",
+        )
 
     try:
         intent = classify_followup_intent(followup_question, last_answer_context)
+        intent_bucket = classify_followup_intent_bucket(intent)
+        relevance_score = score_followup_relevance(followup_question, last_answer_context)
+        if intent_bucket == "quantitative" and active_business_context:
+            # The active semantic context is structured metadata from the current result,
+            # so it can safely establish continuity for a deterministic Pandas follow-up.
+            relevance_score = max(relevance_score, 2)
 
-        if intent == "analytics":
+        trace["intent"] = intent
+        trace["intent_bucket"] = intent_bucket
+        trace["relevance_score"] = relevance_score
+        trace["relevance_decision"] = "relevant" if relevance_score >= 2 else "not_relevant"
+
+        if intent_bucket == "unrelated" or relevance_score < 2:
+            if intent == "ambiguous":
+                suggestions = build_followup_suggestions_from_context(last_answer_context)
+                return finish(
+                    {
+                        "answer_type": "unsupported",
+                        "title": "Clarify Follow-up",
+                        "answer": (
+                            "I can help with this result, but I need one direction: explanation, "
+                            "business action, chart improvement, or a new calculation. This follow-up "
+                            "is not clearly related to the current result yet."
+                        ),
+                        "recommended_action": "Try: " + "; ".join(suggestions) + ".",
+                        "answer_source": "unsupported",
+                    },
+                    final_route="unsupported",
+                    unsupported_reason="ambiguous_or_low_relevance",
+                )
+            return finish(
+                _unsupported_followup_response(last_answer_context),
+                final_route="unsupported",
+                unsupported_reason=(
+                    "classified_unrelated"
+                    if intent_bucket == "unrelated"
+                    else "low_relevance"
+                ),
+            )
+
+        if intent_bucket == "quantitative":
+            trace["grounding_decision"] = "not_required_deterministic_pandas"
+            trace["pandas_called"] = True
             rewritten_question = _rewrite_followup_for_analytics(
                 followup_question,
                 last_answer_context,
@@ -558,85 +1068,123 @@ def answer_followup_question(
             if quantitative_result["answer_source"] == "lead_conversion_analysis":
                 quantitative_result["answer_source"] = "lead conversion analysis"
             quantitative_result["followup_intent"] = intent
-            return quantitative_result
+            quantitative_result["followup_intent_bucket"] = intent_bucket
+            quantitative_result["followup_relevance_score"] = relevance_score
+            if (
+                quantitative_result.get("answer_type") == "unsupported"
+                and _is_action_or_interpretation_followup(followup_question)
+                and is_grounded_qualitative_followup(
+                    followup_question,
+                    last_answer_context,
+                )
+            ):
+                # A result entity can occasionally trigger the deterministic parser
+                # despite action wording. Retry once as a grounded explanation only.
+                trace["pandas_result_answer_type"] = quantitative_result.get("answer_type")
+                trace["pandas_result_answer_source"] = quantitative_result.get("answer_source")
+                trace["pandas_fallback_to_qualitative"] = True
+                trace["intent"] = "business_recommendation"
+                trace["intent_bucket"] = "qualitative_contextual"
+                trace["grounding_decision"] = "grounded_after_pandas_unsupported"
+                intent = "business_recommendation"
+                intent_bucket = "qualitative_contextual"
+            else:
+                return finish(quantitative_result, final_route="pandas")
 
-        if intent == "unrelated":
-            return {
-                "answer_type": "unsupported",
-                "title": "Follow-up Out of Scope",
-                "answer": (
-                    "Follow-up chat only supports questions related to the current InsightFlow result."
-                ),
-                "recommended_action": (
-                    "Ask for an explanation, business action, chart improvement, or a new calculation based on the current result."
-                ),
-                "answer_source": "unsupported",
-            }
-
-        if intent == "ambiguous":
-            return {
-                "answer_type": "unsupported",
-                "title": "Clarify Follow-up",
-                "answer": (
-                    "I can help with this result, but I need one direction: explanation, business action, chart improvement, or a new calculation."
-                ),
-                "recommended_action": (
-                    "Try: 'Explain this', 'What should management do?', 'How can this chart be improved?', or 'Create a chart by region'."
-                ),
-                "answer_source": "unsupported",
-            }
-
-        if intent in {
-            "explanation",
-            "chart_improvement",
-            "business_recommendation",
-            "clarification",
-        }:
+        if intent_bucket == "qualitative_contextual":
+            if not is_grounded_qualitative_followup(followup_question, last_answer_context):
+                trace["grounding_decision"] = "not_grounded"
+                return finish(
+                    _unsupported_followup_response(last_answer_context),
+                    final_route="unsupported",
+                    unsupported_reason="qualitative_followup_not_grounded",
+                )
+            trace["grounding_decision"] = "grounded"
             if not (
                 check_ollama_available()
                 and check_ollama_model_available(OLLAMA_TEXT_MODEL)
             ):
-                return {
-                    "answer_type": "unsupported",
-                    "title": "Follow-up Explanation Unavailable",
-                    "answer": (
-                        "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work."
-                    ),
-                    "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
-                    "answer_source": "unsupported",
-                }
+                return finish(
+                    {
+                        "answer_type": "unsupported",
+                        "title": "Follow-up Explanation Unavailable",
+                        "answer": (
+                            "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work."
+                        ),
+                        "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
+                        "answer_source": "unsupported",
+                    },
+                    final_route="unsupported",
+                    unsupported_reason="ollama_or_model_unavailable",
+                )
 
-            prompt = build_followup_prompt(followup_question, last_answer_context)
-            cache_key = make_explanation_cache_key(followup_question, last_answer_context)
+            prompt = build_followup_prompt(
+                followup_question,
+                last_answer_context,
+                intent=intent,
+            )
+            trace["prompt_marker"] = FOLLOWUP_PROMPT_VERSION
+            trace["prompt_marker_present"] = FOLLOWUP_PROMPT_VERSION in prompt
+            trace["prompt_preview"] = prompt[:2400]
+            trace["grounding_context_keys"] = list(
+                _build_followup_grounding_context(last_answer_context).keys()
+            )
+            trace["generation_options"] = dict(FOLLOWUP_GENERATION_OPTIONS)
+            cache_key = make_explanation_cache_key(
+                followup_question,
+                last_answer_context,
+                intent=intent,
+            )
             if cache_key in EXPLANATION_CACHE:
                 cached = dict(EXPLANATION_CACHE[cache_key])
                 cached["from_cache"] = True
-                return cached
+                trace["ollama_cache_hit"] = True
+                cached_content = str(cached.get("answer", ""))
+                trace["cached_response_length"] = len(cached_content)
+                trace["cached_response_preview"] = cached_content[:800]
+                return finish(cached, final_route="ollama")
 
             start_time = time.perf_counter()
             try:
+                trace["ollama_called"] = True
                 response = generate_fast_explanation(prompt, model=OLLAMA_TEXT_MODEL)
-            except Exception:
-                return {
-                    "answer_type": "unsupported",
-                    "title": "Follow-up Explanation Unavailable",
-                    "answer": (
-                        "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work."
-                    ),
-                    "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
-                    "answer_source": "unsupported",
-                }
+            except Exception as error:
+                trace["ollama_error"] = str(error)
+                return finish(
+                    {
+                        "answer_type": "unsupported",
+                        "title": "Follow-up Explanation Unavailable",
+                        "answer": (
+                            "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work."
+                        ),
+                        "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
+                        "answer_source": "unsupported",
+                    },
+                    final_route="unsupported",
+                    unsupported_reason="ollama_call_exception",
+                )
 
             if not response["ok"] or not response["content"]:
-                return {
-                    "answer_type": "unsupported",
-                    "title": "Follow-up Explanation Unavailable",
-                    "answer": response["content"]
-                    or "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work.",
-                    "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
-                    "answer_source": "unsupported",
-                }
+                return finish(
+                    {
+                        "answer_type": "unsupported",
+                        "title": "Follow-up Explanation Unavailable",
+                        "answer": response["content"]
+                        or "Ollama is unavailable. Follow-up explanation is disabled, but computed Pandas answers still work.",
+                        "recommended_action": "Ask a calculation or chart follow-up, or start Ollama to enable explanation follow-ups.",
+                        "answer_source": "unsupported",
+                    },
+                    final_route="unsupported",
+                    unsupported_reason=f"ollama_response_not_ok:{response.get('error') or 'empty_content'}",
+                )
 
+            raw_response = str(response.get("raw_content", response["content"]))
+            final_response = str(response["content"])
+            trace["raw_response_length"] = len(raw_response)
+            trace["raw_response_preview"] = raw_response[:1200]
+            trace["post_processing"] = response.get("post_processing", "unknown")
+            trace["final_response_length"] = len(final_response)
+            trace["final_response_preview"] = final_response[:1200]
             result = {
                 "answer_type": "metric",
                 "title": "Follow-up Explanation",
@@ -644,26 +1192,29 @@ def answer_followup_question(
                 "recommended_action": last_answer_context.get("recommended_action"),
                 "answer_source": "Ollama follow-up explanation",
                 "followup_intent": intent,
+                "followup_intent_bucket": intent_bucket,
+                "followup_relevance_score": relevance_score,
                 "latency_seconds": round(time.perf_counter() - start_time, 2),
                 "from_cache": False,
             }
             EXPLANATION_CACHE[cache_key] = dict(result)
-            return result
+            return finish(result, final_route="ollama")
 
-        return {
-            "answer_type": "unsupported",
-            "title": "Follow-up Unsupported",
-            "answer": (
-                "Please ask an explanation, business action, chart improvement, or new calculation follow-up about the current result."
-            ),
-            "recommended_action": "Try asking why the result matters, how to improve the chart, or ask for a new chart or metric.",
-            "answer_source": "unsupported",
-        }
-    except Exception:
-        return {
-            "answer_type": "unsupported",
-            "title": "Follow-up Unavailable",
-            "answer": "The follow-up could not be processed safely right now.",
-            "recommended_action": "Try a simpler follow-up question or ask a new main question.",
-            "answer_source": "unsupported",
-        }
+        return finish(
+            _unsupported_followup_response(last_answer_context),
+            final_route="unsupported",
+            unsupported_reason="no_matching_route",
+        )
+    except Exception as error:
+        trace["router_error"] = str(error)
+        return finish(
+            {
+                "answer_type": "unsupported",
+                "title": "Follow-up Unavailable",
+                "answer": "The follow-up could not be processed safely right now.",
+                "recommended_action": "Try a simpler follow-up question or ask a new main question.",
+                "answer_source": "unsupported",
+            },
+            final_route="unsupported",
+            unsupported_reason="unexpected_router_exception",
+        )

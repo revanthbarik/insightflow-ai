@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 
 import requests
@@ -10,6 +11,8 @@ import requests
 from src.config import (
     OLLAMA_BASE_URL,
     OLLAMA_EMBED_MODEL,
+    OLLAMA_RETRY_ATTEMPTS,
+    OLLAMA_RETRY_DELAY_SECONDS,
     OLLAMA_TEXT_MODEL,
     OLLAMA_TIMEOUT_SECONDS,
 )
@@ -27,6 +30,12 @@ SAFETY_INSTRUCTIONS = (
     "When useful, provide recommended actions.\n"
     "All numeric calculations have already been computed by Pandas."
 )
+FOLLOWUP_GENERATION_OPTIONS = {
+    "temperature": 0.1,
+    "num_predict": 240,
+    "top_p": 0.8,
+    "num_ctx": 2048,
+}
 
 
 def _safe_json_request(
@@ -36,15 +45,22 @@ def _safe_json_request(
 ) -> tuple[dict[str, Any] | None, str | None]:
     """Call the Ollama HTTP API safely and return JSON plus an optional error."""
     url = f"{OLLAMA_BASE_URL.rstrip('/')}{endpoint}"
-    try:
-        response = requests.request(
-            method=method,
-            url=url,
-            json=payload,
-            timeout=OLLAMA_TIMEOUT_SECONDS,
-        )
-    except requests.RequestException as error:
-        return None, f"Ollama request failed: {error}"
+    last_error: requests.RequestException | None = None
+    for attempt in range(OLLAMA_RETRY_ATTEMPTS):
+        try:
+            response = requests.request(
+                method=method,
+                url=url,
+                json=payload,
+                timeout=OLLAMA_TIMEOUT_SECONDS,
+            )
+            break
+        except requests.RequestException as error:
+            last_error = error
+            if attempt < OLLAMA_RETRY_ATTEMPTS - 1:
+                time.sleep(OLLAMA_RETRY_DELAY_SECONDS)
+    else:
+        return None, f"Ollama request failed after {OLLAMA_RETRY_ATTEMPTS} attempt(s): {last_error}"
 
     if response.status_code >= 400:
         try:
@@ -104,17 +120,6 @@ def generate_local_response(prompt: str, model: str | None = None) -> dict[str, 
         "error": None,
         "model": selected_model,
     }
-
-
-def _trim_to_four_sentences(text: str) -> str:
-    """Trim model output to four sentences at most."""
-    stripped = text.strip()
-    if not stripped:
-        return stripped
-    parts = [part.strip() for part in stripped.replace("?", ".").replace("!", ".").split(".") if part.strip()]
-    if len(parts) <= 4:
-        return stripped
-    return ". ".join(parts[:4]) + "."
 
 
 def get_local_embedding(text: str, model: str | None = None) -> list[float] | None:
@@ -212,7 +217,7 @@ def synthesize_computed_answer(
 
 
 def generate_fast_explanation(prompt: str, model: str | None = None) -> dict[str, Any]:
-    """Generate a constrained fast local explanation via Ollama."""
+    """Generate a concise structured local explanation via Ollama."""
     selected_model = model or OLLAMA_TEXT_MODEL
     payload, error = _safe_json_request(
         "POST",
@@ -221,13 +226,7 @@ def generate_fast_explanation(prompt: str, model: str | None = None) -> dict[str
             "model": selected_model,
             "prompt": prompt,
             "stream": False,
-            "options": {
-                "temperature": 0.1,
-                "num_predict": 100,
-                "top_p": 0.8,
-                "num_ctx": 2048,
-                "stop": ["\n\n\n"],
-            },
+            "options": FOLLOWUP_GENERATION_OPTIONS,
         },
     )
     if error:
@@ -246,10 +245,13 @@ def generate_fast_explanation(prompt: str, model: str | None = None) -> dict[str
             "model": selected_model,
         }
 
-    response_text = _trim_to_four_sentences(payload.get("response", ""))
+    raw_response_text = payload.get("response", "")
+    response_text = raw_response_text.strip()
     return {
         "ok": True,
         "content": response_text,
+        "raw_content": raw_response_text,
+        "post_processing": "strip_only",
         "error": None,
         "model": selected_model,
     }

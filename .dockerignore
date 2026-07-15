@@ -1,0 +1,12 @@
+.git
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.cursor
+.claude
+.agents
+chroma_db
+outputs
+.env

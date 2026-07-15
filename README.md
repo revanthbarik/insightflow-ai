@@ -25,7 +25,7 @@
 
 **InsightFlow AI** is a local-first revenue operations dashboard for teams that need fast, private pipeline analysis. Load synthetic demo data or upload Zoho CRM CSV exports, explore leads and deals, surface Auto Insights, and ask metric, chart, and management questions — all on your machine.
 
-Calculations are **deterministic Pandas**. Charts are **Matplotlib**. Optional **Ollama** explanations never compute totals. Company data never leaves the workstation.
+Calculations are **deterministic Pandas**. Charts are **Plotly**. Optional **Ollama** explanations never compute totals. Company data never leaves the workstation.
 
 > **Positioning:** A focused private analytics assistant for secure demos and offline RevOps workflows — complementary to enterprise BI, not a Zoho Analytics replacement.
 
@@ -38,7 +38,7 @@ Calculations are **deterministic Pandas**. Charts are **Matplotlib**. Optional *
 | **Pipeline dashboard** | Lead & deal counts, estimated lead value, total deal amount (AED) |
 | **Multi-module Zoho CRM uploads** | Auto-detect modules, map column aliases, validate joins |
 | **Analytics tables** | Leads by source, deals by stage, forecast, sales rep, product, region |
-| **Presentation charts** | High-resolution Matplotlib exports with AED-friendly formatting |
+| **Presentation charts** | Dark-theme Plotly visuals with AED-friendly formatting |
 | **Auto Insights** | Rule-based management takeaways from the active dataset |
 | **Ask InsightFlow AI** | Semantic BI metrics, tables, dynamic charts, qualitative RAG |
 | **Follow-up chat** | Controlled follow-ups constrained to the last Ask result |
@@ -61,7 +61,7 @@ flowchart LR
     LOAD[Data loader & Zoho adapter]
     SEM[Semantic BI / Query engine]
     PANDAS[Pandas analytics]
-    CHART[Matplotlib charts]
+    CHART[Plotly charts]
     RAG[ChromaDB RAG]
     LLM[Ollama explanations]
   end
@@ -87,7 +87,7 @@ flowchart LR
 | --- | --- | --- |
 | UI | Streamlit | Tabs: Leads, Deals, Analytics, Charts, Auto Insights, Ask |
 | Analytics | Pandas | Every metric, aggregation, filter, ranking, chart table |
-| Charts | Matplotlib | Safe, schema-bound visualization |
+| Charts | Plotly | Safe, schema-bound visualization |
 | RAG | ChromaDB | Local vector store under `chroma_db/` |
 | LLM | Ollama (`llama3.1`, `nomic-embed-text`) | Explanation & embeddings only — never calculations |
 | Data | Local CSV | No cloud APIs, no paid keys |
@@ -163,7 +163,6 @@ insightflow-ai/
 ├── app.py                      # Streamlit entry — dashboard & Ask UI
 ├── requirements.txt
 ├── data/                       # Demo leads & deals CSVs
-├── outputs/charts/             # Generated chart PNGs
 ├── chroma_db/                  # Persistent local vector store (gitignored)
 ├── scripts/
 │   └── generate_mock_data.py   # Synthetic Zoho-style CRM data
@@ -238,7 +237,7 @@ Built-in charts ship presentation-ready:
 
 - Larger demo-friendly sizes · clean titles & axes · AED compact money formatting  
 - Sorted / horizontal bars when labels are long · value labels on bars & points  
-- High-resolution exports under `outputs/charts/` · safe empty-data handling  
+- Interactive dark-theme rendering · safe empty-data handling  
 
 **Built-in keys:** `leads_by_source` · `deals_by_stage` · `forecast_summary` · `sales_rep_performance` · `product_category_revenue` · `region_pipeline`
 
@@ -285,7 +284,7 @@ The Ask tab combines a **Semantic BI engine**, deterministic Pandas, schema-safe
 
 Examples: *Show revenue by region* · *Plot leads by source* · *Show average deal size by product category* · *Show monthly pipeline trend based on closing date*
 
-Rules: Pandas computes · Matplotlib renders · unknown fields return guidance — no LLM-generated code, no arbitrary BI execution.
+Rules: Pandas computes · Plotly renders · unknown fields return guidance — no LLM-generated code, no arbitrary BI execution.
 
 </details>
 
@@ -322,11 +321,70 @@ Refresh the knowledge base from the sidebar after uploading new data (`Refresh L
 
 ## Current limitations
 
-- Ask uses structured semantic matching — not open-ended NL reasoning  
-- Dynamic charts are limited to known schema fields  
-- No database ingestion or live Zoho API connector yet  
-- Designed for **local / private** use, not multi-user cloud deployment  
-- Currency presentation is oriented around **AED**
+InsightFlow AI is intentionally scoped as a **local prototype**. These boundaries are by design for privacy and determinism — not incomplete marketing claims.
+
+### Analytics & Ask
+
+| Limitation | Detail |
+| --- | --- |
+| Structured questioning, not free-form BI | Ask uses a semantic / keyword routing layer over known metrics and chart patterns. Open-ended natural language (“build me a cohort retention model”) is out of scope. |
+| No LLM math | Totals, rankings, win rates, and chart series are computed only by Pandas. Ollama never calculates numbers. |
+| Schema-bound charts | Dynamic charts work only for known fields in the loaded datasets. Arbitrary or unknown columns return guidance, not generated code. |
+| Follow-ups are constrained | Chat follow-ups stay tied to the last Ask result; they are not a general multi-turn analyst agent. |
+| Unsupported questions fail safely | Unrecognized asks return clear unsupported / guidance responses instead of guessing. |
+
+### Data & integrations
+
+| Limitation | Detail |
+| --- | --- |
+| CSV only | No live Zoho CRM API, no database connector, no scheduled sync or warehouse ingestion. |
+| Export-shaped uploads | Uploads expect Zoho-style module CSVs with mapped aliases. Exotic custom fields need adapter work. |
+| Capability depends on modules loaded | Missing `Leads`, `Region`, `Product_Category`, etc. disables related analytics with an explicit reason — the app does not invent data. |
+| Demo data is synthetic | Default CSVs are mock RevOps (AED / GCC-flavored) for local demos, not customer production data. |
+
+### Infrastructure & product scope
+
+| Limitation | Detail |
+| --- | --- |
+| Local / single-user focus | Built for private workstation use via Streamlit — not multi-tenant SaaS, auth, sharing, or governance. |
+| Optional AI stack | Without Ollama + embeddings, metrics and charts still work; qualitative synthesis and RAG refresh may be limited. |
+| Currency presentation | Money formatting and LLM explanation context are oriented around **AED**. |
+| No hosted dashboard sharing | Charts are interactive inside the local Streamlit app; there is no hosted dashboard sharing. |
+| Not a Zoho Analytics replacement | No enterprise connectors, scheduled refresh, role-based sharing, or full BI governance. Treat this as a complementary private assistant. |
+
+### Known technical gaps
+
+- Python dependencies in `requirements.txt` are unpinned — pin versions for reproducible installs before production use.
+- CI and hosted deployment automation are not included.
+
+---
+
+## Railway deployment
+
+InsightFlow supports a practical two-service Railway deployment:
+
+1. **App service** — build from the included `Dockerfile`. Railway supplies `PORT`; the container starts Streamlit on `0.0.0.0:$PORT`.
+2. **Ollama service** — expose port `11434` to the app service internally and make these models available:
+   - `llama3.1`
+   - `nomic-embed-text`
+
+Set these app-service environment variables (see `.env.example`):
+
+```env
+OLLAMA_BASE_URL=http://<private-ollama-service>:11434
+OLLAMA_TEXT_MODEL=llama3.1
+OLLAMA_EMBED_MODEL=nomic-embed-text
+CHROMA_PERSIST_DIR=/data/chroma_db
+```
+
+Attach persistent storage:
+
+- **App service:** mount a volume at the directory assigned to `CHROMA_PERSIST_DIR`. It holds ChromaDB's internal vector-store files, including its SQLite backing file.
+- **Ollama service:** for the official Ollama image, mount a persistent volume at `/root/.ollama` so models are not re-downloaded after restart.
+
+The bundled `data/leads.csv` and `data/deals.csv` remain read-only demo defaults. Uploaded CSVs, exports, Ask results, and chat history are intentionally in-memory for this demo-oriented deployment and are not retained across restarts.
+
+If Ollama is not ready at app startup, InsightFlow retries failed HTTP connections a bounded number of times and then continues in deterministic Pandas-only mode until Ollama becomes reachable.
 
 ---
 

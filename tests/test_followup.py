@@ -159,6 +159,22 @@ def test_followup_prompt_uses_compact_json_not_indented_json():
     assert '"answer_title": "Monthly Pipeline Trend by Closing Date"' not in prompt
 
 
+def test_action_followup_prompt_requires_practical_structured_response():
+    prompt = followup.build_followup_prompt(
+        "What can we do to address the closed lost deals?",
+        _last_answer_context(),
+        intent="business_recommendation",
+    )
+
+    assert "**What this indicates**" in prompt
+    assert "**Likely causes to investigate**" in prompt
+    assert "**Practical next steps**" in prompt
+    assert "**Recommended follow-up analysis**" in prompt
+    assert "Do not merely restate the chart or table." in prompt
+    assert '"categories_and_values"' in prompt
+    assert followup.FOLLOWUP_PROMPT_VERSION in prompt
+
+
 def test_calculation_style_followup_routes_away_from_ollama():
     result = followup.answer_followup_question(
         "What is the total amount?",
@@ -493,3 +509,149 @@ def test_management_priority_analytics_followup_stays_on_query_engine(monkeypatc
 
     assert result["answer_source"] == "semantic BI calculation"
     assert result["followup_intent"] == "analytics"
+
+
+def test_relevance_score_accepts_indirect_grounded_action_followup():
+    context = _last_answer_context()
+    assert followup.score_followup_relevance("How should we address this?", context) >= 2
+    assert followup.is_grounded_qualitative_followup("How should we address this?", context)
+
+
+def test_indirect_grounded_action_followup_uses_ollama(monkeypatch):
+    monkeypatch.setattr(followup, "check_ollama_available", lambda: True)
+    monkeypatch.setattr(followup, "check_ollama_model_available", lambda model: True)
+    monkeypatch.setattr(
+        followup,
+        "generate_fast_explanation",
+        lambda prompt, model=None: {
+            "ok": True,
+            "content": "Review the pipeline gaps and assign clear owners for the weaker months.",
+            "error": None,
+            "model": model,
+        },
+    )
+
+    result = followup.answer_followup_question(
+        "How should we address this?",
+        _last_answer_context(),
+        _sample_leads(),
+        _sample_deals(),
+    )
+
+    assert result["answer_source"] == "Ollama follow-up explanation"
+    assert result["followup_intent_bucket"] == "qualitative_contextual"
+
+
+def test_unrelated_followup_is_blocked_with_contextual_suggestions():
+    result = followup.answer_followup_question(
+        "What is machine learning?",
+        _last_answer_context(),
+        _sample_leads(),
+        _sample_deals(),
+    )
+
+    assert result["answer_type"] == "unsupported"
+    assert "not clearly related" in result["answer"]
+    assert "Break this down by sales rep" in result["recommended_action"]
+
+
+def test_stage_entity_resolution_is_conservative():
+    context = {
+        **_last_answer_context(),
+        "answer_title": "Deals by Stage",
+        "main_entity": "deal stage",
+        "table_preview": [{"Deal_Stage": "Closed Lost", "Total_Amount": 500000.0}],
+    }
+    resolved = followup.resolve_followup_entities_from_context(
+        "Show the lost deals",
+        context,
+    )
+
+    assert "Closed Lost deal stage" in resolved
+
+
+def test_closed_lost_action_followup_routes_to_grounded_ollama(monkeypatch):
+    monkeypatch.setattr(followup, "check_ollama_available", lambda: True)
+    monkeypatch.setattr(followup, "check_ollama_model_available", lambda model: True)
+    monkeypatch.setattr(
+        followup,
+        "generate_fast_explanation",
+        lambda prompt, model=None: {
+            "ok": True,
+            "content": "Review loss reasons, improve qualification, and assign owners to recovery actions.",
+            "error": None,
+            "model": model,
+        },
+    )
+    stage_result = {
+        "answer_type": "table",
+        "title": "Deals by Stage",
+        "answer": "Deals grouped by stage with counts and total amount.",
+        "recommended_action": "Focus on stages with the highest total amount.",
+        "answer_source": "table aggregation",
+        "data": pd.DataFrame(
+            [{"Deal_Stage": "Closed Lost", "Deal_Count": 2, "Total_Amount": 500000.0}]
+        ),
+    }
+    context = followup.build_last_answer_context(
+        "Show deals by stage.",
+        stage_result,
+        _sample_leads(),
+        _sample_deals(),
+    )
+
+    response = followup.answer_followup_question(
+        "what can i do to address the closed lost deals",
+        context,
+        _sample_leads(),
+        _sample_deals(),
+    )
+
+    assert response["answer_source"] == "Ollama follow-up explanation"
+    assert response["followup_intent_bucket"] == "qualitative_contextual"
+    assert response["followup_relevance_score"] >= 2
+
+
+def test_action_wording_takes_priority_over_deal_entity_metric():
+    context = _last_answer_context()
+    assert (
+        followup.classify_followup_intent(
+            "what are the suitable steps we can take for the closed lost deals",
+            context,
+        )
+        == "business_recommendation"
+    )
+
+
+def test_unsupported_pandas_action_route_falls_back_to_grounded_ollama(monkeypatch):
+    monkeypatch.setattr(followup, "classify_followup_intent", lambda question, context: "analytics")
+    monkeypatch.setattr(
+        followup,
+        "answer_business_question",
+        lambda *args, **kwargs: {
+            "answer_type": "unsupported",
+            "answer_source": "unsupported",
+            "answer": "Pandas cannot determine a requested calculation.",
+        },
+    )
+    monkeypatch.setattr(followup, "check_ollama_available", lambda: True)
+    monkeypatch.setattr(followup, "check_ollama_model_available", lambda model: True)
+    monkeypatch.setattr(
+        followup,
+        "generate_fast_explanation",
+        lambda prompt, model=None: {
+            "ok": True,
+            "content": "Review loss reasons and improve early-stage qualification.",
+            "error": None,
+        },
+    )
+
+    response = followup.answer_followup_question(
+        "what can we do to address this?",
+        _last_answer_context(),
+        _sample_leads(),
+        _sample_deals(),
+    )
+
+    assert response["answer_source"] == "Ollama follow-up explanation"
+    assert response["followup_intent_bucket"] == "qualitative_contextual"
